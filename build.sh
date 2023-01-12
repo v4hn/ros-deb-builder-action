@@ -60,7 +60,7 @@ for PKG_PATH in $(catkin_topological_order --only-folders); do
   echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
   test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && continue
   test -f "$PKG_PATH/COLCON_IGNORE" && echo "Skipped" && continue
-  (
+  #(
   cd "$PKG_PATH"
 
   if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO"; then
@@ -80,7 +80,8 @@ for PKG_PATH in $(catkin_topological_order --only-folders); do
   sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
     --extra-package=/home/runner/apt_repo "$@" || echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-$ROS_DISTRO/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
-  )
+  #)
+  cd -
   COUNT=$((COUNT+1))
   ccache -sv
   echo "::endgroup::"
