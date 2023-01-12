@@ -36,13 +36,10 @@ runs:
     - name: Check out the repo
       uses: actions/checkout@v3
     - name: Cache ccache
-      uses: pat-s/always-upload-cache@v3
+      uses: actions/cache@v3
       with:
         path: /home/runner/.cache/ccache
-        key: ccache-${{ inputs.ROS_DISTRO }}-${{ github.sha }}-${{ github.run_id }}
-        restore-keys: |
-          ccache-${{ inputs.ROS_DISTRO }}-${{ github.sha }}
-          ccache-${{ inputs.ROS_DISTRO }}
+        key: ccache-${{ inputs.DEB_DISTRO }}-${{ inputs.ROS_DISTRO }}
     - name: Setup build environment
       run: $GITHUB_ACTION_PATH/prepare.sh
       shell: sh
@@ -65,7 +62,7 @@ runs:
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
     - name: Deploy
       if: ${{ inputs.GITHUB_TOKEN }}
-      uses: s0/git-publish-subdir-action@develop
+      uses: s0/git-publish-subdir-action@v2.6.0
       env:
         REPO: self
         BRANCH: ${{ inputs.DEB_DISTRO }}-${{ inputs.ROS_DISTRO }}
