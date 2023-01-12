@@ -82,7 +82,6 @@ for PKG_PATH in $(catkin_topological_order --only-folders); do
     --extra-package=/home/runner/apt_repo "$@" || echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-$ROS_DISTRO/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
   )
   COUNT=$((COUNT+1))
+  ccache -sv
   echo "::endgroup::"
 done
-
-ccache -sv
