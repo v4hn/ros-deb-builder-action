@@ -61,7 +61,7 @@ TOTAL="$(catkin_topological_order --only-names | wc -l)"
 COUNT=1
 
 # TODO: use colcon list -tp in future
-for PKG_PATH in setup_files $(catkin_topological_order --only-folders | grep -v setup_files); do
+for PKG_PATH in src/setup_files $(catkin_topological_order --only-folders | grep -v setup_files); do
   echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
   test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && continue
   test -f "$PKG_PATH/COLCON_IGNORE" && echo "Skipped" && continue
