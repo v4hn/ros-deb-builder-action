@@ -13,10 +13,10 @@ else
 fi
 
 case $ROS_DISTRO in
-  roso)
+  one)
     BLOOM=ros
-    ROS_DISTRO=debian
     ROS_DEB="$ROS_DISTRO-"
+    ROS_DISTRO=debian
     ;;
   debian)
     ;;
@@ -45,7 +45,7 @@ mkdir /home/runner/apt_repo
 echo "Add unreleased packages to rosdep"
 
 for PKG in $(catkin_topological_order --only-names); do
-  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-$ROS_DEB$(printf '%s' "$PKG" | tr '_' '-')" >> /home/runner/apt_repo/local.yaml
+  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> /home/runner/apt_repo/local.yaml
 done
 echo "yaml file:///home/runner/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/1-local.list
 printf "%s" "$ROSDEP_SOURCE" | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
@@ -72,6 +72,7 @@ for PKG_PATH in $(catkin_topological_order --only-folders); do
     echo "- bloom-generate of $(basename "$PKG_PATH")" >> /home/runner/apt_repo/Failed.md
     exit 0
   fi
+  sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-')
 
   # Set the version based on the checked out tag
   # git tags with slashes will be reduced to their last component for convenience
@@ -85,7 +86,7 @@ for PKG_PATH in $(catkin_topological_order --only-folders); do
   if ! sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
     --extra-package=/home/runner/apt_repo "$@"; then
-    echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-$ROS_DISTRO/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+    echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
   fi
   #)
   cd -
