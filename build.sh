@@ -16,6 +16,7 @@ case $ROS_DISTRO in
   roso)
     BLOOM=ros
     ROS_DISTRO=debian
+    ROS_DEB="$ROS_DISTRO-"
     ;;
   debian)
     ;;
