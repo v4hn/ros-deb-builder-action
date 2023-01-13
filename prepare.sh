@@ -7,14 +7,14 @@ echo "Install dependencies"
 
 sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/sbuild
 sudo apt update
-sudo apt install -y mmdebstrap distro-info debian-archive-keyring ccache curl vcstool python3-rosdep2 sbuild catkin python3-bloom
+sudo apt install -y mmdebstrap distro-info debian-archive-keyring ccache curl vcstool python3-rosdep2 sbuild catkin python3-bloom apt-cacher-ng
 
 echo "Setup build environment"
 
 mkdir -p ~/.cache/sbuild
 mmdebstrap --variant=buildd --include=apt,ccache \
   --customize-hook='chroot "$1" update-ccache-symlinks' \
-  --components=main,universe "$DEB_DISTRO" "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar"
+  "$DEB_DISTRO" "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar" "deb http://127.0.0.1:3142/azure.archive.ubuntu.com/ubuntu $DEB_DISTRO main universe"
 
 ccache --zero-stats --max-size=10.0G
 
