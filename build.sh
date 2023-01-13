@@ -60,6 +60,8 @@ export DEB_BUILD_OPTIONS=nocheck
 TOTAL="$(catkin_topological_order --only-names | wc -l)"
 COUNT=1
 
+EXTRA_DEPENDS=""
+
 # TODO: use colcon list -tp in future
 for PKG_PATH in src/setup_files $(catkin_topological_order --only-folders | grep -v setup_files); do
   echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
@@ -85,17 +87,18 @@ for PKG_PATH in src/setup_files $(catkin_topological_order --only-folders | grep
   # https://github.com/ros-infrastructure/bloom/pull/643
   echo 11 > debian/compat
 
-  if [[ $PKG_PATH != setup_files ]]; then
-    SETUP_FILES="--add-depends=ros-one-setup-files"
-  fi
   # dpkg-source-opts: no need for upstream.tar.gz
   if ! sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
     --extra-package=/home/runner/apt_repo \
-    $SETUP_FILES \
+    $EXTRA_DEPENDS \
     "$@"; then
     echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
     exit 0
+  fi
+
+  if [[ $PKG_PATH = src/setup_files ]]; then
+    EXTRA_DEPENDS+=" --add-depends=ros-one-setup-files"
   fi
   #)
   cd -
