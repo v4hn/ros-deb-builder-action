@@ -13,6 +13,9 @@ else
 fi
 
 case $ROS_DISTRO in
+  roso)
+    BLOOM=ros
+    ;;
   debian)
     ;;
   boxturtle|cturtle|diamondback|electric|fuerte|groovy|hydro|indigo|jade|kinetic|lunar)
