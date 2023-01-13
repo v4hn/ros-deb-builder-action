@@ -82,9 +82,11 @@ for PKG_PATH in $(catkin_topological_order --only-folders); do
   echo 11 > debian/compat
 
   # dpkg-source-opts: no need for upstream.tar.gz
-  sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
+  if ! sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
-    --extra-package=/home/runner/apt_repo "$@" || echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-$ROS_DISTRO/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+    --extra-package=/home/runner/apt_repo "$@"; then
+    echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-$ROS_DISTRO/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+  fi
   #)
   cd -
   COUNT=$((COUNT+1))
