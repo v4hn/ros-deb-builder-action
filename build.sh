@@ -72,7 +72,10 @@ for PKG_PATH in src/setup_files $(catkin_topological_order --only-folders | grep
     echo "- bloom-generate of $(basename "$PKG_PATH")" >> /home/runner/apt_repo/Failed.md
     exit 0
   fi
-  sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-')
+  # because bloom needs to see the ROS distro as "debian" to resolve rosdep keys the generated files
+  # all use the "debian" term, but we want this distribution to be called "one" instead
+  sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
+  sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
 
   # Set the version based on the checked out tag
   # git tags with slashes will be reduced to their last component for convenience
