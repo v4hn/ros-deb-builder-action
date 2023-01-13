@@ -92,6 +92,7 @@ for PKG_PATH in setup_files $(catkin_topological_order --only-folders | grep -v 
     $SETUP_FILES \
     "$@"; then
     echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+    exit 0
   fi
   #)
   cd -
