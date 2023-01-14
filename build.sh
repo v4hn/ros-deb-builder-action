@@ -97,11 +97,11 @@ for PKG_PATH in src/setup_files src/ros_environment $(catkin_topological_order -
     exit 0
   fi
 
-  if [[ $PKG_PATH = src/setup_files ]]; then
-    EXTRA_DEPENDS+=" --add-depends=ros-one-setup-files"
+  if [ $PKG_PATH = src/setup_files ]; then
+    EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-setup-files"
   fi
-  if [[ $PKG_PATH = src/ros_environment ]]; then
-    EXTRA_DEPENDS+=" --add-depends=ros-one-ros-environment"
+  if [ $PKG_PATH = src/ros_environment ]; then
+    EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-ros-environment"
   fi
   #)
   cd -
