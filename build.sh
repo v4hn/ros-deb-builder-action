@@ -14,6 +14,8 @@ fi
 
 case $ROS_DISTRO in
   one)
+    # ros one is handled on top of basic debian packages,
+    # but has its own ros-one-* package prefix and installs to /opt/ros
     BLOOM=ros
     ROS_DEB="$ROS_DISTRO-"
     ROS_DISTRO=debian
