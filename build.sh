@@ -64,8 +64,10 @@ COUNT=1
 
 EXTRA_DEPENDS=""
 
+cd src
+
 # TODO: use colcon list -tp in future
-for PKG_PATH in src/setup_files src/ros_environment $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
+for PKG_PATH in setup_files ros_environment $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
   echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
   test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && continue
   test -f "$PKG_PATH/COLCON_IGNORE" && echo "Skipped" && continue
@@ -99,10 +101,10 @@ for PKG_PATH in src/setup_files src/ros_environment $(catkin_topological_order -
     exit 0
   fi
 
-  if [ $PKG_PATH = src/setup_files ]; then
+  if [ $PKG_PATH = setup_files ]; then
     EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-setup-files"
   fi
-  if [ $PKG_PATH = src/ros_environment ]; then
+  if [ $PKG_PATH = ros_environment ]; then
     EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-ros-environment"
   fi
   #)
