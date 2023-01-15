@@ -42,7 +42,7 @@ esac
 # make output directory
 mkdir /home/runner/apt_repo
 
-echo "Add unreleased packages to rosdep"
+echo "::group::Add unreleased packages to rosdep"
 
 for PKG in $(catkin_topological_order --only-names); do
   printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> /home/runner/apt_repo/local.yaml
@@ -51,6 +51,8 @@ echo "yaml file:///home/runner/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/
 printf "%s" "$ROSDEP_SOURCE" | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
 
 rosdep update
+
+echo "::endgroup::"
 
 echo "Run sbuild"
 
