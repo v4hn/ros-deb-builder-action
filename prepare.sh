@@ -23,6 +23,9 @@ DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   python3-bloom \
   apt-cacher-ng
 
+echo "ACT::: $ACT"
+service apt-cacher-ng start
+
 echo "::endgroup::"
 
 echo "::group::Setup build environment"
