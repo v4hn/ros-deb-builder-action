@@ -1,6 +1,8 @@
 #!/bin/sh
 # SPDX-License-Identifier: BSD-3-Clause
 
+echo "::group::Prepare build"
+
 set -ex
 
 if debian-distro-info --all | grep -q "$DEB_DISTRO"; then
@@ -67,6 +69,8 @@ COUNT=1
 EXTRA_DEPENDS=""
 
 cd src
+
+echo "::endgroup::"
 
 # TODO: use colcon list -tp in future
 for PKG_PATH in setup_files ros_environment $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
