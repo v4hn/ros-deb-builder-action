@@ -7,7 +7,18 @@ echo "::group::Install action dependencies"
 
 sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/sbuild
 sudo apt update
-sudo apt install -y mmdebstrap distro-info debian-archive-keyring ccache curl vcstool python3-rosdep2 sbuild catkin python3-bloom apt-cacher-ng
+DEBIAN_FRONTEND=noninteractive sudo apt install -y \
+  mmdebstrap \
+  distro-info \
+  debian-archive-keyring \
+  ccache \
+  curl \
+  vcstool \
+  python3-rosdep2 \
+  sbuild \
+  catkin \
+  python3-bloom \
+  apt-cacher-ng
 
 echo "::endgroup::"
 
