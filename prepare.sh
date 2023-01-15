@@ -3,14 +3,15 @@
 
 set -ex
 
-echo "Install dependencies"
+echo "::group::Install action dependencies"
 
 sudo add-apt-repository ppa:v-launchpad-jochen-sprickerhof-de/sbuild
 sudo apt update
 sudo apt install -y mmdebstrap distro-info debian-archive-keyring ccache curl vcstool python3-rosdep2 sbuild catkin python3-bloom apt-cacher-ng
 
-echo "Setup build environment"
+echo "::endgroup::"
 
+echo "::group::Setup build environment"
 mkdir -p ~/.cache/sbuild
 mmdebstrap --variant=buildd --include=apt,ccache \
   --customize-hook='chroot "$1" update-ccache-symlinks' \
@@ -33,7 +34,9 @@ echo "$SBUILD_CONF" >> ~/.sbuildrc
 
 cat ~/.sbuildrc
 
-echo "Checkout workspace"
+echo "::endgroup::"
+
+echo "group::Checkout workspace from $REPOS_FILE"
 
 mkdir src
 case $REPOS_FILE in
@@ -44,3 +47,5 @@ case $REPOS_FILE in
     vcs import src < "$REPOS_FILE"
     ;;
 esac
+
+echo "::endgroup::"
