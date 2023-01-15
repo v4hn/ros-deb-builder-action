@@ -89,10 +89,10 @@ for PKG_PATH in setup_files ros_environment $(catkin_topological_order --only-fo
   sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
 
-  # Set the version based on the checked out tag
-  # git tags with slashes will be reduced to their last component for convenience
-  # as release versions should not contain '/' anyway
-  sed -i "1 s@([^)]*)@($(git describe --tag 2>/dev/null || echo 0 | sed 's@.*/@@')-$(date +%Y.%m.%d.%H.%M))@" debian/changelog
+  # Set the version based on the checked out git state
+  # git tags like release/noetic/package/1.2.3 and v1.2.3 are reduced to their pure version number 1.2.3
+  description=`( git describe --tag 2>/dev/null || echo 0 ) | sed -E 's@.*/@@; s@^v@@'`
+  sed -i "1 s@([^)]*)@($description-$(date +%Y.%m.%d.%H.%M))@" debian/changelog
 
   # https://github.com/ros-infrastructure/bloom/pull/643
   echo 11 > debian/compat
