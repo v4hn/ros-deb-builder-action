@@ -7,6 +7,9 @@ echo "::group::Install action dependencies"
 
 sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/sbuild
 sudo apt update
+
+echo apt-cacher-ng apt-cacher-ng/tunnelenable boolean true | sudo debconf-set-selections
+
 DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   mmdebstrap \
   distro-info \
