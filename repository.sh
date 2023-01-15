@@ -3,6 +3,8 @@
 
 set -ex
 
+echo "::group::Setup deb repository"
+
 vcs export src --exact-with-tags > /home/runner/apt_repo/sources.repos
 
 cd /home/runner/apt_repo
@@ -17,3 +19,5 @@ echo "sudo apt install python3-rosdep2" >> README.md
 echo "echo \"yaml https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-$ROS_DISTRO/local.yaml debian\" | sudo tee /etc/ros/rosdep/sources.list.d/1-$REPOSITORY.list" >> README.md
 echo "rosdep update" >> README.md
 echo '```' >> README.md
+
+echo "::endgroup::"
