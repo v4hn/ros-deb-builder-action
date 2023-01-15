@@ -36,7 +36,7 @@ cat ~/.sbuildrc
 
 echo "::endgroup::"
 
-echo "group::Checkout workspace from $REPOS_FILE"
+echo "::group::Checkout workspace from $REPOS_FILE"
 
 mkdir src
 case $REPOS_FILE in
