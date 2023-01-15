@@ -44,7 +44,7 @@ case $ROS_DISTRO in
 esac
 
 # make output directory
-mkdir /home/runner/apt_repo
+mkdir -p /home/runner/apt_repo
 
 echo "::group::Add unreleased packages to rosdep"
 
