@@ -23,8 +23,10 @@ DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   python3-bloom \
   apt-cacher-ng
 
-echo "ACT::: $ACT"
-service apt-cacher-ng start
+if [ "$ACT" = "true" ]; then
+  # autostarting services does not work in `act` due to systemd missing in docker
+  service apt-cacher-ng start
+fi
 
 echo "::endgroup::"
 
