@@ -125,6 +125,7 @@ EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-ros-environment"
 # we need to install these to make sure all ROS_* variables are set correctly in catkin_topological_order below
 sudo dpkg -i $HOME/apt_repo/ros-one-setup-files*.deb $HOME/apt_repo/ros-one-ros-environment*.deb
 . /opt/ros/one/setup.sh
+ROS_DISTRO=debian
 
 # TODO: use colcon list -tp in future
 for PKG_PATH in $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
