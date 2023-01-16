@@ -54,7 +54,7 @@ done
 echo "yaml file://$HOME/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/1-local.list
 echo $ROSDEP_SOURCE | while read source; do
   [ ! -f $GITHUB_WORKSPACE/$source ] || source="file://$GITHUB_WORKSPACE/$source"
-  printf "yaml %s $ROS_DISTRO" "$source" | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
+  printf "yaml %s $ROS_DISTRO\n" "$source" | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
 done
 
 rosdep update
