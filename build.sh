@@ -49,10 +49,13 @@ mkdir -p /home/runner/apt_repo
 echo "::group::Add unreleased packages to rosdep"
 
 for PKG in $(catkin_topological_order --only-names); do
-  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> /home/runner/apt_repo/local.yaml
+  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> $HOME/apt_repo/local.yaml
 done
-echo "yaml file:///home/runner/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/1-local.list
-printf "%s" "$ROSDEP_SOURCE" | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
+echo "yaml file://$HOME/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/1-local.list
+echo $ROSDEP_SOURCE | while read source; do
+  [ ! -f $GITHUB_WORKSPACE/$source ] || source="file://$GITHUB_WORKSPACE/$source"
+  printf "yaml %s $ROS_DISTRO" "$source" | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
+done
 
 rosdep update
 
