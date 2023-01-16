@@ -77,9 +77,11 @@ echo "::endgroup::"
 
 build_deb(){
   PKG_PATH="$1"
+
   echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
-  test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && continue
-  test -f "$PKG_PATH/COLCON_IGNORE" && echo "Skipped" && continue
+  test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && return
+  test -f "$PKG_PATH/COLCON_IGNORE" && echo "Skipped" && return
+
   cd "$PKG_PATH"
 
   if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO"; then
@@ -114,17 +116,15 @@ build_deb(){
   echo "::endgroup::"
 }
 
+# special handling for packages that setup the install workspace
 for PKG_PATH in setup_files ros_environment; do
+	test -d "$PKG_PATH" || continue
 	build_deb "$PKG_PATH"
+	PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
+	EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
+	sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
 done
-
-EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-setup-files"
-EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-ros-environment"
-
-# we need to install these to make sure all ROS_* variables are set correctly in catkin_topological_order below
-sudo dpkg -i $HOME/apt_repo/ros-one-setup-files*.deb $HOME/apt_repo/ros-one-ros-environment*.deb
-. /opt/ros/one/setup.sh
-ROS_DISTRO=debian
+test -f /opt/ros/one/setup.sh && . /opt/ros/one/setup.sh
 
 # TODO: use colcon list -tp in future
 for PKG_PATH in $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
