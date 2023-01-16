@@ -14,10 +14,12 @@ else
   exit 1
 fi
 
+EXTRA_SBUILD_OPTS=""
+
 case $ROS_DISTRO in
   one)
     # ros one is handled on top of basic debian packages,
-    # but has its own ros-one-* package prefix and installs to /opt/ros
+    # but has its own ros-one-* package prefix and installs to /opt/ros/one
     BLOOM=ros
     ROS_DEB="$ROS_DISTRO-"
     ROS_DISTRO=debian
@@ -32,14 +34,14 @@ case $ROS_DISTRO in
     BLOOM=ros
     ROS_DEB="$ROS_DISTRO-"
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /home/runner/ros-archive-keyring.gpg
-    set -- --extra-repository="deb http://packages.ros.org/ros/ubuntu $DEB_DISTRO main" --extra-repository-key=/home/runner/ros-archive-keyring.gpg "$@"
+    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='deb http://packages.ros.org/ros/ubuntu $DEB_DISTRO main' --extra-repository-key=/home/runner/ros-archive-keyring.gpg"
     ;;
   *)
     # assume ROS 2 so we don't have to list versions
     BLOOM=ros
     ROS_DEB="$ROS_DISTRO-"
     curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /home/runner/ros-archive-keyring.gpg
-    set -- --extra-repository="deb http://packages.ros.org/ros2/ubuntu $DEB_DISTRO main" --extra-repository-key=/home/runner/ros-archive-keyring.gpg "$@"
+    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='deb http://packages.ros.org/ros2/ubuntu $DEB_DISTRO main' --extra-repository-key=/home/runner/ros-archive-keyring.gpg"
     ;;
 esac
 
@@ -68,8 +70,6 @@ export DEB_BUILD_OPTIONS=nocheck
 
 TOTAL="$(catkin_topological_order --only-names | wc -l)"
 COUNT=1
-
-EXTRA_DEPENDS=""
 
 cd src
 
@@ -100,11 +100,10 @@ build_deb(){
   echo 11 > debian/compat
 
   # dpkg-source-opts: no need for upstream.tar.gz
-  # TODO: this had "$@" as last argument when it was outside the function
   if ! sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
     --extra-package=/home/runner/apt_repo \
-    $EXTRA_DEPENDS; then
+    $EXTRA_SBUILD_OPTS; then
     echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
     exit 0
   fi
