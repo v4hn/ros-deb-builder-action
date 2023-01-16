@@ -75,12 +75,11 @@ cd src
 
 echo "::endgroup::"
 
-# TODO: use colcon list -tp in future
-for PKG_PATH in setup_files ros_environment $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
+build_deb(){
+  PKG_PATH="$1"
   echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
   test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && continue
   test -f "$PKG_PATH/COLCON_IGNORE" && echo "Skipped" && continue
-  #(
   cd "$PKG_PATH"
 
   if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO"; then
@@ -101,24 +100,33 @@ for PKG_PATH in setup_files ros_environment $(catkin_topological_order --only-fo
   echo 11 > debian/compat
 
   # dpkg-source-opts: no need for upstream.tar.gz
+  # TODO: this had "$@" as last argument when it was outside the function
   if ! sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
     --extra-package=/home/runner/apt_repo \
-    $EXTRA_DEPENDS \
-    "$@"; then
+    $EXTRA_DEPENDS; then
     echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
     exit 0
   fi
 
-  if [ $PKG_PATH = setup_files ]; then
-    EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-setup-files"
-  fi
-  if [ $PKG_PATH = ros_environment ]; then
-    EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-ros-environment"
-  fi
-  #)
   cd -
   COUNT=$((COUNT+1))
   ccache -sv
   echo "::endgroup::"
+}
+
+for PKG_PATH in setup_files ros_environment; do
+	build_deb "$PKG_PATH"
+done
+
+EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-setup-files"
+EXTRA_DEPENDS="$EXTRA_DEPENDS --add-depends=ros-one-ros-environment"
+
+# we need to install these to make sure all ROS_* variables are set correctly in catkin_topological_order below
+sudo dpkg -i $HOME/apt_repo/ros-one-setup-files*.deb $HOME/apt_repo/ros-one-ros-environment*.deb
+. /opt/ros/one/setup.sh
+
+# TODO: use colcon list -tp in future
+for PKG_PATH in $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
+  build_deb "$PKG_PATH"
 done
