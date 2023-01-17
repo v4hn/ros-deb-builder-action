@@ -64,8 +64,7 @@ runs:
         ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
     - name: Deploy
-      if: ${{ success() || inputs.PUSH_ON_ERROR }}
-      if: ${{ inputs.GITHUB_TOKEN }}
+      if: ( success() || inputs.PUSH_ON_ERROR == 'true' ) && inputs.GITHUB_TOKEN
       uses: s0/git-publish-subdir-action@v2.6.0
       env:
         REPO: self
