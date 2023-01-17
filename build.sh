@@ -85,6 +85,8 @@ build_deb(){
   PKG_PATH="$1"
 
   echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
+  COUNT=$((COUNT+1))
+
   test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && return
   test -f "$PKG_PATH/COLCON_IGNORE" && echo "Skipped" && return
 
@@ -92,6 +94,7 @@ build_deb(){
 
   if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO"; then
     echo "- bloom-generate of $(basename "$PKG_PATH")" >> /home/runner/apt_repo/Failed.md
+    cd -
     return 1
   fi
   # because bloom needs to see the ROS distro as "debian" to resolve rosdep keys the generated files
@@ -113,11 +116,11 @@ build_deb(){
     --extra-package=/home/runner/apt_repo \
     $EXTRA_SBUILD_OPTS; then
     echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+    cd -
     return 1
   fi
 
   cd -
-  COUNT=$((COUNT+1))
   ccache -sv
   echo "::endgroup::"
 }
