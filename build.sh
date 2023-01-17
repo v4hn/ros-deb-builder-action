@@ -45,6 +45,12 @@ case $ROS_DISTRO in
     ;;
 esac
 
+if [ -n "$EXTRA_DEB_REPOSITORIES" ]; then
+  echo $EXTRA_DEB_REPOSITORIES | while read entry; do
+    EXTRA_DEB_REPOSITORIES="$EXTRA_SBUILD_OPTS --extra-repository='$entry'"
+  done
+fi
+
 # make output directory
 mkdir -p /home/runner/apt_repo
 

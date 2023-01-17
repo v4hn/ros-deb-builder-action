@@ -11,6 +11,12 @@ inputs:
   DEB_DISTRO:
     description: The Debian/Ubuntu distribution codename to compile for.
     required: true
+  DEB_REPOSITORY:
+    description: additional sources.list entries to add for package builds
+    required: false
+  ROSDEP_SOURCE:
+    description: Additional rosdep sources.
+    required: false
   REPOS_FILE:
     description: Repos file with list of repositories to package.
     required: false
@@ -18,9 +24,6 @@ inputs:
   SBUILD_CONF:
     description: Additional sbuild.conf lines. For example EXTRA_REPOSITORIES,
       or VERBOSE. See man sbuild.conf.
-    required: false
-  ROSDEP_SOURCE:
-    description: Additional rosdep sources.
     required: false
   GITHUB_TOKEN:
     description: Set to deploy to a DEB_DISTRO-ROS_DISTRO branch in the same repo.
@@ -54,6 +57,7 @@ runs:
       env:
         ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
+        DEB_REPOSITORY: ${{ inputs.DEB_REPOSITORY }}
         ROSDEP_SOURCE: ${{ inputs.ROSDEP_SOURCE }}
         CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
     - name: Create apt repository
