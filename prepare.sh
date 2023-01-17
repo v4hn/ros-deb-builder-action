@@ -6,6 +6,8 @@ set -ex
 echo "::group::Install action dependencies"
 
 sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/sbuild
+echo $DEB_REPOSITORY | sudo tee /etc/apt/sources.list.d/1-custom-ros-deb-builder-repositories.list
+
 sudo apt update
 
 echo apt-cacher-ng apt-cacher-ng/tunnelenable boolean true | sudo debconf-set-selections

@@ -49,6 +49,7 @@ runs:
       shell: sh
       env:
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
+        DEB_REPOSITORY: ${{ inputs.DEB_REPOSITORY }}
         REPOS_FILE: ${{ inputs.REPOS_FILE }}
         SBUILD_CONF: ${{ inputs.SBUILD_CONF }}
     - name: Create packages
