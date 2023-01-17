@@ -86,7 +86,7 @@ build_deb(){
 
   if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO"; then
     echo "- bloom-generate of $(basename "$PKG_PATH")" >> /home/runner/apt_repo/Failed.md
-    exit 0
+    return 1
   fi
   # because bloom needs to see the ROS distro as "debian" to resolve rosdep keys the generated files
   # all use the "debian" term, but we want this distribution to be called "one" instead
@@ -107,7 +107,7 @@ build_deb(){
     --extra-package=/home/runner/apt_repo \
     $EXTRA_SBUILD_OPTS; then
     echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
-    exit 0
+    return 1
   fi
 
   cd -
@@ -126,7 +126,16 @@ for PKG_PATH in setup_files ros_environment; do
 done
 test -f /opt/ros/one/setup.sh && . /opt/ros/one/setup.sh
 
+FAIL_EVENTUALLY=0
 # TODO: use colcon list -tp in future
 for PKG_PATH in $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
-  build_deb "$PKG_PATH"
+  if ! build_deb "$PKG_PATH"; then
+    if [ "$CONTINUE_ON_ERROR" = false ]; then
+      exit 1
+    else
+      FAIL_EVENTUALLY=1
+	 fi
+  fi
 done
+
+exit $FAIL_EVENTUALLY

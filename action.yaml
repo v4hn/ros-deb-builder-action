@@ -30,6 +30,14 @@ inputs:
     description: If set to true, all previous commits on the target branch will be discarded.
     required: false
     default: false
+  CONTINUE_ON_ERROR:
+    description: continue building packages once a package failed
+    required: false
+    default: false
+  PUSH_ON_ERROR:
+    description: push built packages into the repository if any package failed to build
+    required: false
+    default: false
 runs:
   using: composite
   steps:
@@ -47,13 +55,16 @@ runs:
         ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
         ROSDEP_SOURCE: ${{ inputs.ROSDEP_SOURCE }}
+        CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
     - name: Create apt repository
+      if: ${{ success() }}
       run: $GITHUB_ACTION_PATH/repository.sh
       shell: sh
       env:
         ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
     - name: Deploy
+      if: ${{ success() || inputs.PUSH_ON_ERROR }}
       if: ${{ inputs.GITHUB_TOKEN }}
       uses: s0/git-publish-subdir-action@v2.6.0
       env:
