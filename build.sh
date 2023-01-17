@@ -116,15 +116,18 @@ build_deb(){
   echo "::endgroup::"
 }
 
-# special handling for packages that setup the install workspace
+# handle essential packages first
 for PKG_PATH in setup_files ros_environment; do
-	test -d "$PKG_PATH" || continue
-	build_deb "$PKG_PATH"
-	PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
-	EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
-	sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
+   test -d "$PKG_PATH" || continue
+   if ! build_deb "$PKG_PATH"; then
+     echo "Building essential package '$PKG_PATH' failed"
+     exit 1
+   fi
+   PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
+   EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
+   sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
 done
-test -f /opt/ros/one/setup.sh && . /opt/ros/one/setup.sh
+. /opt/ros/one/setup.sh
 
 FAIL_EVENTUALLY=0
 # TODO: use colcon list -tp in future
@@ -134,7 +137,7 @@ for PKG_PATH in $(catkin_topological_order --only-folders | grep -v 'setup_files
       exit 1
     else
       FAIL_EVENTUALLY=1
-	 fi
+    fi
   fi
 done
 
