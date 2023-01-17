@@ -118,15 +118,21 @@ build_deb(){
 
 # handle essential packages first
 for PKG_PATH in setup_files ros_environment; do
-   test -d "$PKG_PATH" || continue
-   if ! build_deb "$PKG_PATH"; then
+   PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
+
+   if ! test -d "$PKG_PATH"; then
+     # assume it is available as package if it is not in this source list
+     sudo apt install -y ros-one-$PKG_NAME
+   elif ! build_deb "$PKG_PATH"; then
      echo "Building essential package '$PKG_PATH' failed"
      exit 1
+   else
+     sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
    fi
-   PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
-   sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
 done
+
+# required for correct catkin_topological_order below
 . /opt/ros/one/setup.sh
 
 FAIL_EVENTUALLY=0
