@@ -33,10 +33,6 @@ inputs:
     description: If set to true, all previous commits on the target branch will be discarded.
     required: false
     default: false
-  BUILD_TIMEOUT:
-    description: timeout for the package builds in minutes
-    required: false
-    default: 360
   CONTINUE_ON_ERROR:
     description: continue building packages once a package failed
     required: false
@@ -58,7 +54,6 @@ runs:
         SBUILD_CONF: ${{ inputs.SBUILD_CONF }}
     - name: Create packages
       run: $GITHUB_ACTION_PATH/build.sh
-      timeout-minutes: ${{ inputs.BUILD_TIMEOUT }}
       shell: sh
       env:
         ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
