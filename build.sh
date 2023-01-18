@@ -46,8 +46,9 @@ case $ROS_DISTRO in
 esac
 
 if [ -n "$EXTRA_DEB_REPOSITORIES" ]; then
-  echo $EXTRA_DEB_REPOSITORIES | while read entry; do
-    EXTRA_DEB_REPOSITORIES="$EXTRA_SBUILD_OPTS --extra-repository='$entry'"
+  # trick to parse separate lines for each quoted entry
+  eval "sh -c 'while [ -n \"\$1\" ]; do echo \$1; shift; done' -- $EXTRA_DEB_REPOSITORIES" | while read entry; do
+    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='$entry'"
   done
 fi
 
@@ -60,8 +61,8 @@ for PKG in $(catkin_topological_order --only-names); do
   printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> $HOME/apt_repo/local.yaml
 done
 echo "yaml file://$HOME/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/1-local.list
-echo $ROSDEP_SOURCE | while read source; do
-  [ ! -f $GITHUB_WORKSPACE/$source ] || source="file://$GITHUB_WORKSPACE/$source"
+for source in $ROSDEP_SOURCE; do
+  [ ! -f "$GITHUB_WORKSPACE/$source" ] || source="file://$GITHUB_WORKSPACE/$source"
   printf "yaml %s $ROS_DISTRO\n" "$source" | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
 done
 
