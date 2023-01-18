@@ -1,0 +1,39 @@
+name: create apt repository
+description: Create and deploy an apt repository from a bunch of built deb files
+author: Jochen Sprickerhof
+branding:
+  icon: 'package'
+  color: 'green'
+inputs:
+  ROS_DISTRO:
+    description: The ROS distribution codename to compile for.
+    required: true
+  DEB_DISTRO:
+    description: The Debian/Ubuntu distribution codename to compile for.
+    required: true
+  GITHUB_TOKEN:
+    description: Set to deploy to a DEB_DISTRO-ROS_DISTRO branch in the same repo.
+    required: false
+    default: false
+  SQUASH_HISTORY:
+    description: If set to true, all previous commits on the target branch will be discarded.
+    required: false
+    default: false
+runs:
+  using: composite
+  steps:
+    - name: Create apt repository
+      run: $GITHUB_ACTION_PATH/../repository.sh
+      shell: sh
+      env:
+        ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
+        DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
+    - name: Deploy
+      if: ${{ inputs.GITHUB_TOKEN }}
+      uses: s0/git-publish-subdir-action@v2.6.0
+      env:
+        REPO: self
+        BRANCH: ${{ inputs.DEB_DISTRO }}-${{ inputs.ROS_DISTRO }}
+        FOLDER: /home/runner/apt_repo
+        GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
+        SQUASH_HISTORY: ${{ inputs.SQUASH_HISTORY }}

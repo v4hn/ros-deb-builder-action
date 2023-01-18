@@ -1,0 +1,55 @@
+name: ROS deb builder
+description: Github Action to create deb packages from ROS source packages
+author: Jochen Sprickerhof / Michael Goerner
+branding:
+  icon: 'package'
+  color: 'green'
+inputs:
+  ROS_DISTRO:
+    description: The ROS distribution codename to compile for.
+    required: true
+  DEB_DISTRO:
+    description: The Debian/Ubuntu distribution codename to compile for.
+    required: true
+  DEB_REPOSITORY:
+    description: additional sources.list entries to add for package builds
+    required: false
+  ROSDEP_SOURCE:
+    description: Additional rosdep sources.
+    required: false
+  REPOS_FILE:
+    description: Repos file with list of repositories to package.
+    required: false
+    default: sources.repos
+  SBUILD_CONF:
+    description: Additional sbuild.conf lines. For example EXTRA_REPOSITORIES,
+      or VERBOSE. See man sbuild.conf.
+    required: false
+  GITHUB_TOKEN:
+    description: Set to deploy to a DEB_DISTRO-ROS_DISTRO branch in the same repo.
+    required: false
+    default: false
+  CONTINUE_ON_ERROR:
+    description: continue building packages once a package failed
+    required: false
+    default: false
+runs:
+  using: composite
+  steps:
+    - name: Setup build environment
+      run: $GITHUB_ACTION_PATH/../prepare.sh
+      shell: sh
+      env:
+        DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
+        DEB_REPOSITORY: ${{ inputs.DEB_REPOSITORY }}
+        REPOS_FILE: ${{ inputs.REPOS_FILE }}
+        SBUILD_CONF: ${{ inputs.SBUILD_CONF }}
+    - name: Create packages
+      run: $GITHUB_ACTION_PATH/../build.sh
+      shell: sh
+      env:
+        ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
+        DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
+        DEB_REPOSITORY: ${{ inputs.DEB_REPOSITORY }}
+        ROSDEP_SOURCE: ${{ inputs.ROSDEP_SOURCE }}
+        CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
