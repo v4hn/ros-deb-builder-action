@@ -45,9 +45,9 @@ case $ROS_DISTRO in
     ;;
 esac
 
-if [ -n "$EXTRA_DEB_REPOSITORIES" ]; then
-  # trick to parse separate lines for each quoted entry
-  eval "sh -c 'while [ -n \"\$1\" ]; do echo \$1; shift; done' -- $EXTRA_DEB_REPOSITORIES" | while read entry; do
+if [ -n "$DEB_REPOSITORY" ]; then
+  echo "$DEB_REPOSITORY" | while read entry; do
+    [ ! -z "${entry// }" ] || continue
     EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='$entry'"
   done
 fi
@@ -139,6 +139,7 @@ for PKG_PATH in setup_files ros_environment; do
    else
      sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
    fi
+   # TODO(v4hn): in overlay repositories the entries added above are all gone, so builds cannot find ros-one-* packages
    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
 done
 
