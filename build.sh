@@ -126,6 +126,8 @@ build_deb(){
   echo "::endgroup::"
 }
 
+vcs export --exact-with-tags >> /home/runner/apt_repo/sources.repos
+
 # handle essential packages first
 for PKG_PATH in setup_files ros_environment; do
    PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
