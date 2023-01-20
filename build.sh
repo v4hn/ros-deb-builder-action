@@ -134,7 +134,7 @@ for PKG_PATH in setup_files ros_environment; do
 
    if ! test -d "$PKG_PATH"; then
      # assume it is available as package if it is not in this source list
-     sudo apt install -y ros-one-$PKG_NAME
+     sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
    elif ! build_deb "$PKG_PATH"; then
      echo "Building essential package '$PKG_PATH' failed"
      exit 1
