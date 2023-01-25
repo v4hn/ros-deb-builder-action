@@ -46,7 +46,7 @@ case $ROS_DISTRO in
 esac
 
 if [ -n "$DEB_REPOSITORY" ]; then
-  echo "$DEB_REPOSITORY" | while read entry; do
+  echo -e "$DEB_REPOSITORY" | while read entry; do
     [ ! -z "${entry// }" ] || continue
     EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='$entry'"
   done
