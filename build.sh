@@ -45,12 +45,12 @@ case $ROS_DISTRO in
     ;;
 esac
 
-if [ -n "$DEB_REPOSITORY" ]; then
-  echo -e "$DEB_REPOSITORY" | while read entry; do
-    [ ! -z "${entry// }" ] || continue
-    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='$entry'"
-  done
-fi
+echo -e "$DEB_REPOSITORY" | while read entry; do
+  case $entry in
+    (*[![:blank:]]*) EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='$entry'";;
+    (*) ;; # contains only blank/empty string
+  esac
+done
 
 # make output directory
 mkdir -p /home/runner/apt_repo
