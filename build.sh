@@ -132,16 +132,14 @@ vcs export --exact-with-tags >> /home/runner/apt_repo/sources.repos
 for PKG_PATH in setup_files ros_environment; do
    PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
 
-   if ! test -d "$PKG_PATH"; then
-     # assume it is available as package if it is not in this source list
-     sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
-   elif ! build_deb "$PKG_PATH"; then
+   if test -d "$PKG_PATH" && ! build_deb "$PKG_PATH"; then
      echo "Building essential package '$PKG_PATH' failed"
      exit 1
-   else
-     sudo dpkg -i $HOME/apt_repo/ros-one-$PKG_NAME*.deb
    fi
-   # TODO(v4hn): in overlay repositories the entries added above are all gone, so builds cannot find ros-one-* packages
+   eval PKG_DEB=$HOME/apt_repo/ros-one-$PKG_NAME*.deb
+   test -f "${PKG_DEB}" || PKG_DEB="ros-one-${PKG_NAME}"
+   sudo apt install -y ${PKG_DEB}
+
    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
 done
 
