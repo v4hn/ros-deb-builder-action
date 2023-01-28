@@ -93,8 +93,18 @@ build_deb(){
 
   cd "$PKG_PATH"
 
-  if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO"; then
-    echo "- bloom-generate of $(basename "$PKG_PATH")" >> /home/runner/apt_repo/Failed.md
+  pkg_name="$(catkin_topological_order --only-names)"
+
+  # Set the version based on the checked out tag that contain at least on digit
+  # strip any leading non digits as they are not part of the version number
+  description=`( git describe --tag --match "*[0-9]*" 2>/dev/null || echo 0 ) | sed 's@^[^0-9]*@@'`
+
+  base_url="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one"
+
+  bloom_log=${pkg_name}_${description}-bloom_generate.log
+
+  if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO" 2>&1 | tee /home/runner/apt_repo/${bloom_log} 2>&1; then
+    echo "- [bloom-generate for ${pkg_name}]($base_url/${bloom_log})" >> /home/runner/apt_repo/Failed.md
     cd -
     return 1
   fi
@@ -103,9 +113,6 @@ build_deb(){
   sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
 
-  # Set the version based on the checked out tag that contain at least on digit
-  # strip any leading non digits as they are not part of the version number
-  description=`( git describe --tag --match "*[0-9]*" 2>/dev/null || echo 0 ) | sed 's@^[^0-9]*@@'`
   sed -i "1 s@([^)]*)@($description-$(date +%Y.%m.%d.%H.%M))@" debian/changelog
 
   # https://github.com/ros-infrastructure/bloom/pull/643
@@ -116,7 +123,7 @@ build_deb(){
     --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
     --extra-package=/home/runner/apt_repo \
     $EXTRA_SBUILD_OPTS; then
-    echo "- [$(catkin_topological_order --only-names)](https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+    echo "- [sbuild for $pkg_name](${base_url}/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
     cd -
     return 1
   fi
