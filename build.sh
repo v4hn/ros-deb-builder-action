@@ -103,7 +103,13 @@ build_deb(){
 
   bloom_log=${pkg_name}_${description}-bloom_generate.log
 
-  if ! bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO" 2>&1 | tee /home/runner/apt_repo/${bloom_log} 2>&1; then
+  # dash does not support `set -o pipefail`, so we work around it with a named pipe
+  mkfifo bloom_fifo
+  tee /home/runner/apt_repo/${bloom_log} < bloom_fifo &
+  bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO" > bloom_fifo 2>&1
+  bloom_success=$?
+  rm bloom_fifo
+  if [ $bloom_success -ne 0 ]; then
     echo "- [bloom-generate for ${pkg_name}]($base_url/${bloom_log})" >> /home/runner/apt_repo/Failed.md
     cd -
     return 1
