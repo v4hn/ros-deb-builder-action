@@ -34,7 +34,7 @@ echo "::endgroup::"
 
 echo "::group::Setup build environment"
 mkdir -p ~/.cache/sbuild
-mmdebstrap --variant=buildd --include=apt,ccache \
+mmdebstrap --variant=buildd --include=apt,ccache,ca-certificates \
   --customize-hook='chroot "$1" update-ccache-symlinks' \
   "$DEB_DISTRO" "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar" "deb http://127.0.0.1:3142/azure.archive.ubuntu.com/ubuntu $DEB_DISTRO main universe"
 
