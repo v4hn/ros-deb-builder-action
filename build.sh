@@ -45,12 +45,7 @@ case $ROS_DISTRO in
     ;;
 esac
 
-echo -e "$DEB_REPOSITORY" | while read entry; do
-  case $entry in
-    (*[![:blank:]]*) EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='$entry'";;
-    (*) ;; # contains only blank/empty string
-  esac
-done
+EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T; s/.*/--extra-repository="\0"/; p' | tr '\n' ' ')"
 
 # make output directory
 mkdir -p /home/runner/apt_repo
@@ -124,11 +119,12 @@ build_deb(){
   # https://github.com/ros-infrastructure/bloom/pull/643
   echo 11 > debian/compat
 
-  # dpkg-source-opts: no need for upstream.tar.gz
-  if ! sbuild --chroot-mode=unshare --no-clean-source --no-run-lintian \
-    --dpkg-source-opts="-Zgzip -z1 --format=1.0 -sn" --build-dir=/home/runner/apt_repo \
+  SBUILD_OPTS="--chroot-mode=unshare --no-clean-source --no-run-lintian \
+    --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=/home/runner/apt_repo \
     --extra-package=/home/runner/apt_repo \
-    $EXTRA_SBUILD_OPTS; then
+    $EXTRA_SBUILD_OPTS"
+  # dpkg-source-opts: no need for upstream.tar.gz
+  if ! eval sbuild $SBUILD_OPTS; then
     echo "- [sbuild for $pkg_name](${base_url}/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
     cd -
     return 1
