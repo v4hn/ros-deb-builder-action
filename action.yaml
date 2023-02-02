@@ -61,19 +61,10 @@ runs:
         DEB_REPOSITORY: ${{ inputs.DEB_REPOSITORY }}
         ROSDEP_SOURCE: ${{ inputs.ROSDEP_SOURCE }}
         CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
-    - name: Create apt repository
-      if: success() || inputs.PUSH_ON_ERROR == 'true'
-      run: $GITHUB_ACTION_PATH/repository.sh
-      shell: sh
-      env:
-        ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
-        DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
     - name: Deploy
       if: ( success() || inputs.PUSH_ON_ERROR == 'true' ) && inputs.GITHUB_TOKEN
-      uses: s0/git-publish-subdir-action@v2.6.0
-      env:
-        REPO: self
-        BRANCH: ${{ inputs.DEB_DISTRO }}-${{ inputs.ROS_DISTRO }}
-        FOLDER: /home/runner/apt_repo
+      uses: v4hn/ros-deb-builder-action/deploy@rostest
+      with:
+        BRANCH: ${{ env.DEB_DISTRO }}-${{ env.ROS_DISTRO }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
-        SQUASH_HISTORY: ${{ inputs.SQUASH_HISTORY }}
+        SQUASH_HISTORY: true
