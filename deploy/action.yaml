@@ -29,7 +29,7 @@ runs:
       uses: s0/git-publish-subdir-action@v2.6.0
       env:
         REPO: self
-        BRANCH: ${{ inputs.DEB_DISTRO }}-${{ inputs.ROS_DISTRO }}
+        BRANCH: ${{ inputs.BRANCH }}
         FOLDER: /home/runner/apt_repo
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
         SQUASH_HISTORY: ${{ inputs.SQUASH_HISTORY }}

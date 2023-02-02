@@ -26,9 +26,13 @@ inputs:
       or VERBOSE. See man sbuild.conf.
     required: false
   GITHUB_TOKEN:
-    description: Set to deploy to a DEB_DISTRO-ROS_DISTRO branch in the same repo.
+    description: Set to deploy to BRANCH in the same repo.
     required: false
     default: false
+  BRANCH:
+    description: custom branch to push to. Default is DEB_DISTRO-ROS_DISTRO
+    required: false
+    default:
   SQUASH_HISTORY:
     description: If set to true, all previous commits on the target branch will be discarded.
     required: false
@@ -44,27 +48,22 @@ inputs:
 runs:
   using: composite
   steps:
-    - name: Setup build environment
-      run: $GITHUB_ACTION_PATH/prepare.sh
-      shell: sh
-      env:
-        DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
-        DEB_REPOSITORY: ${{ inputs.DEB_REPOSITORY }}
-        REPOS_FILE: ${{ inputs.REPOS_FILE }}
-        SBUILD_CONF: ${{ inputs.SBUILD_CONF }}
-    - name: Create packages
-      run: $GITHUB_ACTION_PATH/build.sh
-      shell: sh
-      env:
+    - name: Check out the repo
+      uses: actions/checkout@v3
+    - name: Build
+      uses: v4hn/ros-deb-builder-action/build@rosotest2
+      with:
         ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
         DEB_REPOSITORY: ${{ inputs.DEB_REPOSITORY }}
+        REPOS_FILE: ${{ inputs.REPOS_FILE }}
         ROSDEP_SOURCE: ${{ inputs.ROSDEP_SOURCE }}
+        SBUILD_CONF: ${{ inputs.SBUILD_CONF }}
         CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
     - name: Deploy
-      if: ( success() || inputs.PUSH_ON_ERROR == 'true' ) && inputs.GITHUB_TOKEN
-      uses: v4hn/ros-deb-builder-action/deploy@rostest
+      if: inputs.GITHUB_TOKEN && ( success() || inputs.PUSH_ON_ERROR == 'true' )
+      uses: v4hn/ros-deb-builder-action/deploy@rosotest2
       with:
-        BRANCH: ${{ env.DEB_DISTRO }}-${{ env.ROS_DISTRO }}
+        BRANCH: ${{ inputs.BRANCH && inputs.BRANCH || format('{0}-{1}', inputs.DEB_DISTRO, inputs.ROS_DISTRO) }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
         SQUASH_HISTORY: true
