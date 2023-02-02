@@ -61,13 +61,5 @@ echo "::endgroup::"
 echo "::group::Checkout workspace from $REPOS_FILE"
 
 mkdir src
-case $REPOS_FILE in
-  http*)
-    curl -sSL "$REPOS_FILE" | vcs import --recursive src
-    ;;
-  *)
-    vcs import --recursive src < "$REPOS_FILE"
-    ;;
-esac
-
+vcs import --recursive --input  "$REPOS_FILE" src
 echo "::endgroup::"
