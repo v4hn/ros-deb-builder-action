@@ -32,7 +32,6 @@ inputs:
   BRANCH:
     description: custom branch to push to. Default is DEB_DISTRO-ROS_DISTRO
     required: false
-    default:
   SQUASH_HISTORY:
     description: If set to true, all previous commits on the target branch will be discarded.
     required: false
