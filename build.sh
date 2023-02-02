@@ -14,6 +14,8 @@ else
   exit 1
 fi
 
+REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-$ROS_DISTRO"
+
 EXTRA_SBUILD_OPTS=""
 
 case $ROS_DISTRO in
@@ -94,8 +96,6 @@ build_deb(){
   # strip any leading non digits as they are not part of the version number
   description=`( git describe --tag --match "*[0-9]*" 2>/dev/null || echo 0 ) | sed 's@^[^0-9]*@@'`
 
-  base_url="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$DEB_DISTRO-one"
-
   bloom_log=${pkg_name}_${description}-bloom_generate.log
 
   # dash does not support `set -o pipefail`, so we work around it with a named pipe
@@ -105,7 +105,7 @@ build_deb(){
   bloom_success=$?
   rm bloom_fifo
   if [ $bloom_success -ne 0 ]; then
-    echo "- [bloom-generate for ${pkg_name}]($base_url/${bloom_log})" >> /home/runner/apt_repo/Failed.md
+    echo "- [bloom-generate for ${pkg_name}]($REPOSITORY_URL/${bloom_log})" >> /home/runner/apt_repo/Failed.md
     cd -
     return 1
   fi
@@ -125,7 +125,7 @@ build_deb(){
     $EXTRA_SBUILD_OPTS"
   # dpkg-source-opts: no need for upstream.tar.gz
   if ! eval sbuild $SBUILD_OPTS; then
-    echo "- [sbuild for $pkg_name](${base_url}/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+    echo "- [sbuild for $pkg_name]($REPOSITORY_URL/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
     cd -
     return 1
   fi
