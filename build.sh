@@ -55,12 +55,12 @@ echo "::group::Add unreleased packages to rosdep"
 for PKG in $(catkin_topological_order --only-names); do
   printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> $HOME/apt_repo/local.yaml
 done
-echo "yaml file://$HOME/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/1-local.list
+echo "yaml file://$HOME/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/01-local.list
 
 for source in $ROSDEP_SOURCE; do
   [ ! -f "$GITHUB_WORKSPACE/$source" ] || source="file://$GITHUB_WORKSPACE/$source"
   printf "yaml %s $ROS_DISTRO\n" "$source"
-done | sudo tee /etc/ros/rosdep/sources.list.d/2-remote.list
+done | sudo tee /etc/ros/rosdep/sources.list.d/02-remote.list
 
 rosdep update
 
