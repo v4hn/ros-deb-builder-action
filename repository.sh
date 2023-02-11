@@ -11,7 +11,7 @@ apt-ftparchive packages . > Packages
 apt-ftparchive release . > Release
 
 REPOSITORY="$(printf "%s" "$GITHUB_REPOSITORY" | tr / _)"
-REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/"
+REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH"
 [ ! -f Failed.md ] || sed -i "s|@REPOSITORY_URL@|$REPOSITORY_URL|" Failed.md
 
 echo '```bash' > README.md
