@@ -1,6 +1,11 @@
 #!/bin/sh
 # SPDX-License-Identifier: BSD-3-Clause
 
+if ! bloom-release --help 2>&1 | grep -q -- --skip-pip; then
+   (cd /tmp/; git clone https://github.com/ros-infrastructure/bloom -b 0.10.7 bloom-$$)
+   (cd /tmp/bloom-$$; wget https://github.com/ros-infrastructure/bloom/pull/412.diff; patch -p1 < 412.diff; pip install .)
+fi
+
 echo "::group::Prepare build"
 
 set -ex
@@ -100,7 +105,7 @@ build_deb(){
   # dash does not support `set -o pipefail`, so we work around it with a named pipe
   mkfifo bloom_fifo
   tee /home/runner/apt_repo/${bloom_log} < bloom_fifo &
-  bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO" > bloom_fifo 2>&1
+  bloom-generate "${BLOOM}debian" --skip-pip --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO" > bloom_fifo 2>&1
   bloom_success=$?
   rm bloom_fifo
   if [ $bloom_success -ne 0 ]; then
