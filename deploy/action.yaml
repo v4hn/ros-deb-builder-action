@@ -26,7 +26,7 @@ runs:
         BRANCH: ${{ inputs.BRANCH }}
     - name: Deploy
       if: ${{ inputs.GITHUB_TOKEN }}
-      uses: s0/git-publish-subdir-action@v2.6.0
+      uses: s0/git-publish-subdir-action@develop
       env:
         REPO: self
         BRANCH: ${{ inputs.BRANCH }}
