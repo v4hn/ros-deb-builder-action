@@ -21,17 +21,15 @@ echo "echo \"yaml $REPOSITORY_URL/local.yaml debian\" | sudo tee /etc/ros/rosdep
 echo "rosdep update" >> README.md
 echo '```' >> README.md
 
-echo "\n## Recently Built\n" >> README.md
+# echo "Package,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
+PKG_STATUS=pkg_build_status.csv
 
-for file in $(ls -t *.deb); do
-   echo "- [$file]($REPOSITORY_URL/$file)  " >> README.md
-done
+if [ -f $PKG_STATUS ]; then
+   echo "\n## Build Status\n" >> README.md
+   echo "| Package | Status | Bloom Log | Build Log | Deb File |" >> README.md
+   echo "| ------- | ------ | --------- | --------- | -------- |" >> README.md
 
-if [ -f Failed.md ]; then
-   sed -i "s|@REPOSITORY_URL@|$REPOSITORY_URL|" Failed.md
-   echo "\n## Recently Failed\n" >> README.md
-
-   cat Failed.md >> README.md
+   cat $PKG_STATUS | awk -F, -v repo="$REPOSITORY_URL" '{printf "| " $1 " | " $2 " | [bloom-generate](" repo "/" $3 ") | [sbuild](" repo "/" $4 ") | [deb](" repo "/" $5 ") |\n"}' >> README.md
 fi
 
 echo "::endgroup::"

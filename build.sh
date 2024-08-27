@@ -49,7 +49,13 @@ EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T;
 
 # make output directory
 REPO=/home/runner/apt_repo
+PKG_STATUS=$REPO/pkg_build_status.csv
 mkdir -p $REPO
+
+log_pkg_build() {
+   # echo "Package,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
+   echo "$1,$2,$3,$4,$5" >> $PKG_STATUS
+}
 
 echo "::group::Add unreleased packages to rosdep"
 
@@ -105,7 +111,7 @@ build_deb(){
   bloom_success=$?
   rm bloom_fifo
   if [ $bloom_success -ne 0 ]; then
-    echo "- [bloom-generate for ${pkg_name}](@REPOSITORY_URL@/${bloom_log})" >> /home/runner/apt_repo/Failed.md
+    log_pkg_build "$pkg_name" "failed-bloom-generate" "$bloom_log"
     cd -
     return 1
   fi
@@ -123,11 +129,20 @@ build_deb(){
     --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=$REPO --extra-package=$REPO \
     $EXTRA_SBUILD_OPTS"
   # dpkg-source-opts: no need for upstream.tar.gz
-  if ! eval sbuild $SBUILD_OPTS; then
-    echo "- [sbuild for $pkg_name](@REPOSITORY_URL@/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+  eval sbuild $SBUILD_OPTS
+  sbuild_success=$?
+
+  build_log=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build)
+
+  if [ $sbuild_success -ne 0 ]; then
+    log_pkg_build "$pkg_name" "failed-sbuild" "$bloom_log" "$build_log"
     cd -
     return 1
   fi
+
+  deb=$(ls $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*.deb)
+
+  log_pkg_build "$pkg_name" "success" "$bloom_log" "$build_log" "$deb"
 
   cd -
   ccache -sv
