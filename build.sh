@@ -48,14 +48,15 @@ esac
 EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T; s/.*/--extra-repository="\0"/; p' | tr '\n' ' ')"
 
 # make output directory
-mkdir -p /home/runner/apt_repo
+REPO=/home/runner/apt_repo
+mkdir -p $REPO
 
 echo "::group::Add unreleased packages to rosdep"
 
 for PKG in $(catkin_topological_order --only-names); do
-  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> $HOME/apt_repo/local.yaml
+  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> $REPO/local.yaml
 done
-echo "yaml file://$HOME/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/01-local.list
+echo "yaml file://$REPO/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/01-local.list
 
 for source in $ROSDEP_SOURCE; do
   [ ! -f "$GITHUB_WORKSPACE/$source" ] || source="file://$GITHUB_WORKSPACE/$source"
@@ -99,7 +100,7 @@ build_deb(){
 
   # dash does not support `set -o pipefail`, so we work around it with a named pipe
   mkfifo bloom_fifo
-  tee /home/runner/apt_repo/${bloom_log} < bloom_fifo &
+  tee $REPO/${bloom_log} < bloom_fifo &
   bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO" > bloom_fifo 2>&1
   bloom_success=$?
   rm bloom_fifo
@@ -119,8 +120,7 @@ build_deb(){
   echo 11 > debian/compat
 
   SBUILD_OPTS="--chroot-mode=unshare --no-clean-source --no-run-lintian \
-    --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=/home/runner/apt_repo \
-    --extra-package=/home/runner/apt_repo \
+    --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=$REPO --extra-package=$REPO \
     $EXTRA_SBUILD_OPTS"
   # dpkg-source-opts: no need for upstream.tar.gz
   if ! eval sbuild $SBUILD_OPTS; then
@@ -134,7 +134,7 @@ build_deb(){
   echo "::endgroup::"
 }
 
-vcs export --exact-with-tags >> /home/runner/apt_repo/sources.repos
+vcs export --exact-with-tags >> $REPO/sources.repos
 
 # handle essential packages first
 for PKG_PATH in setup_files ros_environment; do
@@ -144,7 +144,7 @@ for PKG_PATH in setup_files ros_environment; do
      echo "Building essential package '$PKG_PATH' failed"
      exit 1
    fi
-   PKG_DEB=`ls $HOME/apt_repo/ros-one-$PKG_NAME*.deb || true`
+   PKG_DEB=`ls $REPO/ros-one-$PKG_NAME*.deb || true`
    test -f "${PKG_DEB}" || PKG_DEB="ros-one-${PKG_NAME}"
    sudo apt install -y ${PKG_DEB}
 
