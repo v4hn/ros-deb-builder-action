@@ -48,7 +48,7 @@ runs:
   using: composite
   steps:
     - name: Check out the repo
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Build
       uses: v4hn/ros-deb-builder-action/build@rosotest
       with:
