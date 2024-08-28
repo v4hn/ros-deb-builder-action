@@ -140,7 +140,7 @@ build_deb(){
     return 1
   fi
 
-  deb=$(ls $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*.deb)
+  deb=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*.deb)
 
   log_pkg_build "$pkg_name" "success" "$bloom_log" "$build_log" "$deb"
 
