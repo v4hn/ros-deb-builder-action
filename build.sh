@@ -53,8 +53,15 @@ PKG_STATUS=$REPO/pkg_build_status.csv
 mkdir -p $REPO
 
 log_pkg_build() {
-   # echo "Package,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
-   echo "$1,$2,$3,$4,$5" >> $PKG_STATUS
+   # echo "Package,Version,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
+   echo "$pkg_name,$pkg_version,$pkg_url,$pkg_status,$pkg_bloom_log,$pkg_build_log,$pkg_deb" >> $PKG_STATUS
+   pkg_name=""
+   pkg_version=""
+   pkg_url=""
+   pkg_status=""
+   pkg_bloom_log=""
+   pkg_build_log=""
+   pkg_deb=""
 }
 
 echo "::group::Add unreleased packages to rosdep"
@@ -101,8 +108,14 @@ build_deb(){
   # Set the version based on the checked out tag that contain at least on digit
   # strip any leading non digits as they are not part of the version number
   description=`( git describe --tag --match "*[0-9]*" 2>/dev/null || echo 0 ) | sed 's@^[^0-9]*@@'`
+  pkg_version="$description-$(date +%Y.%m.%d.%H.%M)"
 
-  bloom_log=${pkg_name}_${description}-bloom_generate.log
+  upstream="$(git remote get-url origin)"
+  upstream_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+  pkg_url="${upstream%.git}/tree/$upstream_branch"
+
+  pkg_bloom_log=${pkg_name}_${pkg_version}-bloom_generate.log
 
   # dash does not support `set -o pipefail`, so we work around it with a named pipe
   mkfifo bloom_fifo
@@ -111,7 +124,8 @@ build_deb(){
   bloom_success=$?
   rm bloom_fifo
   if [ $bloom_success -ne 0 ]; then
-    log_pkg_build "$pkg_name" "failed-bloom-generate" "$bloom_log"
+    pkg_status="failed-bloom-generate"
+    log_pkg_build
     cd -
     return 1
   fi
@@ -120,7 +134,7 @@ build_deb(){
   sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
 
-  sed -i "1 s@([^)]*)@($description-$(date +%Y.%m.%d.%H.%M))@" debian/changelog
+  sed -i "1 s@([^)]*)@($pkg_version)@" debian/changelog
 
   # https://github.com/ros-infrastructure/bloom/pull/643
   echo 11 > debian/compat
@@ -132,19 +146,22 @@ build_deb(){
   eval sbuild $SBUILD_OPTS
   sbuild_success=$?
 
-  build_log=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build)
+  pkg_build_log=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build)
 
   if [ $sbuild_success -ne 0 ]; then
-    log_pkg_build "$pkg_name" "failed-sbuild" "$bloom_log" "$build_log"
+    pkg_status="failed-sbuild"
+    log_pkg_build
     cd -
     return 1
   fi
 
-  deb=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*.deb)
+  pkg_deb=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*.deb)
 
-  log_pkg_build "$pkg_name" "success" "$bloom_log" "$build_log" "$deb"
+  pkg_status="success"
 
+  log_pkg_build
   cd -
+
   ccache -sv
   echo "::endgroup::"
 }

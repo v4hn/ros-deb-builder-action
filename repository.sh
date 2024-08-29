@@ -56,16 +56,21 @@ if [ -f $PKG_STATUS ]; then
 
 ## Build Status
 
-|   | Logs | Package |
-| - | ---- | ------- |
+|   | Logs | Package | Version | URL |
+| - | ---- | ------- | ------- | --- |
 EOF
    cat $PKG_STATUS | awk -F, -v repo="$REPOSITORY_URL" '
 {
    pkg=$1
-   status=$2
-   bloom_log=repo "/" $3
-   build_log=repo "/" $4
-   deb=repo "/" $5
+   version=$2
+   url=$3
+   status=$4
+   bloom_log=repo "/" $5
+   build_log=repo "/" $6
+   deb=repo "/" $7
+
+   eversion=version
+   eurl="[:link:](" url ")"
 
    if(status == "success") {
       estatus=":green_circle:"
@@ -89,7 +94,7 @@ EOF
       print "unknown status: " status
       exit 1
    }
-   printf "| " estatus " | " ebloom " " ebuild " | " epkg " |\n"
+   printf "| " estatus " | " ebloom " " ebuild " | " epkg " | " eversion " | " eurl " |\n"
 }' >> README.md
 fi
 
