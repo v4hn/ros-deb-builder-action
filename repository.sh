@@ -96,6 +96,8 @@ EOF
    }
    printf "| " estatus " | " ebloom " " ebuild " | " epkg " | " eversion " | " eurl " |\n"
 }' >> README.md
+
+   rm "$PKG_STATUS"
 fi
 
 echo "::endgroup::"
