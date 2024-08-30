@@ -119,7 +119,7 @@ build_deb(){
 
   # dash does not support `set -o pipefail`, so we work around it with a named pipe
   mkfifo bloom_fifo
-  tee $REPO/${bloom_log} < bloom_fifo &
+  tee $REPO/${pkg_bloom_log} < bloom_fifo &
   bloom-generate "${BLOOM}debian" --os-name="$DISTRIBUTION" --os-version="$DEB_DISTRO" --ros-distro="$ROS_DISTRO" > bloom_fifo 2>&1
   bloom_success=$?
   rm bloom_fifo
