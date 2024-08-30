@@ -56,8 +56,8 @@ if [ -f $PKG_STATUS ]; then
 
 ## Build Status
 
-|   | Logs | Package | Version | URL |
-| - | ---- | ------- | ------- | --- |
+|   | Logs | Package | Version | Upstream |
+| - | ---- | ------- | ------- | -------- |
 EOF
    cat $PKG_STATUS | awk -F, -v repo="$REPOSITORY_URL" '
 {
