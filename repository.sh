@@ -56,10 +56,14 @@ if [ -f $PKG_STATUS ]; then
 
 ## Build Status
 
+EOF
+
+table() {
+   cat <<EOF
 |   | Logs | Package | Version | Upstream |
 | - | ---- | ------- | ------- | -------- |
 EOF
-   cat $PKG_STATUS | awk -F, -v repo="$REPOSITORY_URL" '
+   awk -F, -v repo="$REPOSITORY_URL" '
 {
    pkg=$1
    version=$2
@@ -96,6 +100,17 @@ EOF
    }
    printf "| " estatus " | " ebloom " " ebuild " | " epkg " | " eversion " | " eurl " |\n"
 }' >> README.md
+}
+
+   cat $PKG_STATUS | table
+
+   cat <<EOF >> README.md
+
+## Top Offenders (broken packages)
+
+EOF
+
+   cat $PKG_STATUS | awk -F, '$4 != /success/' | head -n 5 | table
 
    rm "$PKG_STATUS"
 fi
