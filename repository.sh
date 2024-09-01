@@ -114,9 +114,7 @@ EOF
 
 EOF
 
-   cat $PKG_STATUS | awk -F, '$4 != /success/' | head -n 5 | table
-
-   rm "$PKG_STATUS"
+   cat $PKG_STATUS | awk -F, '$4 != "success"' | head -n 5 | table
 fi
 
 echo "::endgroup::"
