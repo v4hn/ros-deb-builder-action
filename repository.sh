@@ -106,7 +106,7 @@ EOF
 }' >> README.md
 }
 
-   cat $PKG_STATUS | table
+   cat $PKG_STATUS | sort -t, -k1 | table
 
    cat <<EOF >> README.md
 
