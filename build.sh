@@ -166,7 +166,14 @@ build_deb(){
   echo "::endgroup::"
 }
 
-vcs export --exact-with-tags >> $REPO/sources.repos
+echo "::group::prepare sources.repos"
+if [ ! -f $REPO/sources.repos ]; then
+  vcs export --exact-with-tags | tee $REPO/sources.repos
+else
+  # skip "repositories: " line
+  vcs export --exact-with-tags | tail -n+2 | tee -a $REPO/sources.repos
+fi
+echo "::endgroup::"
 
 # handle essential packages first
 for PKG_PATH in setup_files ros_environment; do
