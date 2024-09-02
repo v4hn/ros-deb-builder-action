@@ -175,6 +175,7 @@ else
 fi
 echo "::endgroup::"
 
+echo "::group::Prepare ROS environment variables"
 # handle essential packages first
 for PKG_PATH in setup_files ros_environment; do
    PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
@@ -192,6 +193,7 @@ done
 
 # required for correct catkin_topological_order below
 . /opt/ros/one/setup.sh
+echo "::endgroup::"
 
 FAIL_EVENTUALLY=0
 # TODO: use colcon list -tp in future
