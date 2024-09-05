@@ -53,14 +53,28 @@ esac
 EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T; s/.*/--extra-repository="\0"/; p' | tr '\n' ' ')"
 
 # make output directory
-mkdir -p /home/runner/apt_repo
+REPO=/home/runner/apt_repo
+PKG_STATUS=$REPO/pkg_build_status.csv
+mkdir -p $REPO
+
+log_pkg_build() {
+   # echo "Package,Version,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
+   echo "$pkg_name,$pkg_version,$pkg_url,$pkg_status,$pkg_bloom_log,$pkg_build_log,$pkg_deb" >> $PKG_STATUS
+   pkg_name=""
+   pkg_version=""
+   pkg_url=""
+   pkg_status=""
+   pkg_bloom_log=""
+   pkg_build_log=""
+   pkg_deb=""
+}
 
 echo "::group::Add unreleased packages to rosdep"
 
 for PKG in $(catkin_topological_order --only-names); do
-  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> $HOME/apt_repo/local.yaml
+  printf "%s:\n  %s:\n  - %s\n" "$PKG" "$DISTRIBUTION" "ros-one-$(printf '%s' "$PKG" | tr '_' '-')" >> $REPO/local.yaml
 done
-echo "yaml file://$HOME/apt_repo/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/01-local.list
+echo "yaml file://$REPO/local.yaml $ROS_DISTRO" | sudo tee /etc/ros/rosdep/sources.list.d/01-local.list
 
 for source in $ROSDEP_SOURCE; do
   [ ! -f "$GITHUB_WORKSPACE/$source" ] || source="file://$GITHUB_WORKSPACE/$source"
@@ -99,8 +113,14 @@ build_deb(){
   # Set the version based on the checked out tag that contain at least on digit
   # strip any leading non digits as they are not part of the version number
   description=`( git describe --tag --match "*[0-9]*" 2>/dev/null || echo 0 ) | sed 's@^[^0-9]*@@'`
+  pkg_version="$description-$(date +%Y.%m.%d.%H.%M)"
 
-  bloom_log=${pkg_name}_${description}-bloom_generate.log
+  upstream="$(git remote get-url origin)"
+  upstream_branch="$(git rev-parse --abbrev-ref HEAD)"
+
+  pkg_url="${upstream%.git}/tree/$upstream_branch"
+
+  pkg_bloom_log=${pkg_name}_${pkg_version}-bloom_generate.log
 
   # dash does not support `set -o pipefail`, so we work around it with a named pipe
   mkfifo bloom_fifo
@@ -109,7 +129,8 @@ build_deb(){
   bloom_success=$?
   rm bloom_fifo
   if [ $bloom_success -ne 0 ]; then
-    echo "- [bloom-generate for ${pkg_name}](@REPOSITORY_URL@/${bloom_log})" >> /home/runner/apt_repo/Failed.md
+    pkg_status="failed-bloom-generate"
+    log_pkg_build
     cd -
     return 1
   fi
@@ -118,29 +139,48 @@ build_deb(){
   sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
 
-  sed -i "1 s@([^)]*)@($description-$(date +%Y.%m.%d.%H.%M))@" debian/changelog
+  sed -i "1 s@([^)]*)@($pkg_version)@" debian/changelog
 
   # https://github.com/ros-infrastructure/bloom/pull/643
   echo 11 > debian/compat
 
   SBUILD_OPTS="--chroot-mode=unshare --no-clean-source --no-run-lintian \
-    --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=/home/runner/apt_repo \
-    --extra-package=/home/runner/apt_repo \
+    --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=$REPO --extra-package=$REPO \
     $EXTRA_SBUILD_OPTS"
   # dpkg-source-opts: no need for upstream.tar.gz
-  if ! eval sbuild $SBUILD_OPTS; then
-    echo "- [sbuild for $pkg_name](@REPOSITORY_URL@/$(basename /home/runner/apt_repo/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build))" >> /home/runner/apt_repo/Failed.md
+  eval sbuild $SBUILD_OPTS
+  sbuild_success=$?
+
+  pkg_build_log=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*-*T*.build)
+
+  if [ $sbuild_success -ne 0 ]; then
+    pkg_status="failed-sbuild"
+    log_pkg_build
     cd -
     return 1
   fi
 
+  pkg_deb=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*.deb)
+
+  pkg_status="success"
+
+  log_pkg_build
   cd -
+
   ccache -sv
   echo "::endgroup::"
 }
 
-vcs export --exact-with-tags >> /home/runner/apt_repo/sources.repos
+echo "::group::prepare sources.repos"
+if [ ! -f $REPO/sources.repos ]; then
+  vcs export --exact-with-tags | tee $REPO/sources.repos
+else
+  # skip "repositories: " line
+  vcs export --exact-with-tags | tail -n+2 | tee -a $REPO/sources.repos
+fi
+echo "::endgroup::"
 
+echo "::group::Prepare ROS environment variables"
 # handle essential packages first
 for PKG_PATH in setup_files ros_environment; do
    PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
@@ -149,7 +189,7 @@ for PKG_PATH in setup_files ros_environment; do
      echo "Building essential package '$PKG_PATH' failed"
      exit 1
    fi
-   PKG_DEB=`ls $HOME/apt_repo/ros-one-$PKG_NAME*.deb || true`
+   PKG_DEB=`ls $REPO/ros-one-$PKG_NAME*.deb || true`
    test -f "${PKG_DEB}" || PKG_DEB="ros-one-${PKG_NAME}"
    sudo apt install -y ${PKG_DEB}
 
@@ -158,6 +198,7 @@ done
 
 # required for correct catkin_topological_order below
 . /opt/ros/one/setup.sh
+echo "::endgroup::"
 
 FAIL_EVENTUALLY=0
 # TODO: use colcon list -tp in future
