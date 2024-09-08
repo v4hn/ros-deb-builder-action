@@ -53,8 +53,8 @@ PKG_STATUS=$REPO/pkg_build_status.csv
 mkdir -p $REPO
 
 log_pkg_build() {
-   # echo "Package,Version,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
-   echo "$pkg_name,$pkg_version,$pkg_url,$pkg_status,$pkg_bloom_log,$pkg_build_log,$pkg_deb" >> $PKG_STATUS
+   # echo "Package,Version,Status,Bloom Log,Build Log,Deb File,Installed Files" > $PKG_STATUS
+   echo "$pkg_name,$pkg_version,$pkg_url,$pkg_status,$pkg_bloom_log,$pkg_build_log,$pkg_deb,$pkg_list_files" >> $PKG_STATUS
    pkg_name=""
    pkg_version=""
    pkg_url=""
@@ -62,6 +62,7 @@ log_pkg_build() {
    pkg_bloom_log=""
    pkg_build_log=""
    pkg_deb=""
+   pkg_list_files=""
 }
 
 echo "::group::Add unreleased packages to rosdep"
@@ -156,6 +157,9 @@ build_deb(){
   fi
 
   pkg_deb=$(basename $REPO/$(head -n1 debian/changelog | cut -d' ' -f1)_*.deb)
+
+  pkg_list_files=$(basename $REPO/$pkg_deb .deb).files
+  dpkg -c $REPO/$pkg_deb > $REPO/$pkg_list_files
 
   pkg_status="success"
 

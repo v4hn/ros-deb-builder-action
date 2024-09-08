@@ -64,8 +64,8 @@ EOF
 
 table() {
    cat <<EOF
-|   | Logs | Package | Version | Upstream |
-| - | ---- | ------- | ------- | -------- |
+|   | Logs | Package | Version | Files | Upstream |
+| - | ---- | ------- | ------- | ----- | -------- |
 EOF
    awk -F, -v repo="$REPOSITORY_URL" '
 {
@@ -76,15 +76,18 @@ EOF
    bloom_log=repo "/" $5
    build_log=repo "/" $6
    deb=repo "/" $7
+   file_list=repo "/" $8
 
    eversion=version
    eurl="[:link:](" url ")"
+   efiles=""
 
    if(status == "success") {
       estatus=":green_circle:"
       epkg="[" pkg "](" deb ")"
       ebloom="[:green_book:](" bloom_log ")"
       ebuild="[:green_book:](" build_log ")"
+      efiles="[:books:](" file_list ")"
    }
    else if(status == "failed-sbuild") {
       estatus=":construction:"
@@ -102,7 +105,7 @@ EOF
       print "unknown status: " status
       exit 1
    }
-   printf "| " estatus " | " ebloom " " ebuild " | " epkg " | " eversion " | " eurl " |\n"
+   printf "| " estatus " | " ebloom " " ebuild " | " epkg " | " eversion " | " efiles " | " eurl " |\n"
 }' >> README.md
 }
 
