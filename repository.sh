@@ -51,7 +51,7 @@ cat <<EOF >> README.md
 | Target Distribution | ${BRANCH%-*} |
 | Architecture | $ARCHITECTURES |
 | Available Packages | $PKG_CNT |
-| Built Date | $(date) |
+| Build Date | $(date) |
 EOF
 
 # echo "Package,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
