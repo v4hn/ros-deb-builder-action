@@ -46,6 +46,8 @@ cat <<EOF >> README.md
 
 ## Build
 
+|     |     |
+| --- | --- |
 | Target Distribution | ${BRANCH%-*} |
 | Architecture | $ARCHITECTURES |
 | Available Packages | $PKG_CNT |
