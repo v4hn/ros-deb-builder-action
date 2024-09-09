@@ -106,10 +106,10 @@ EOF
       exit 1
    }
    printf "| " estatus " | " ebloom " " ebuild " | " epkg " | " eversion " | " efiles " | " eurl " |\n"
-}' >> README.md
+}'
 }
 
-   cat $PKG_STATUS | sort -t, -k1 | table
+   cat $PKG_STATUS | sort -t, -k1 | table >> README.md
 
    cat <<EOF >> README.md
 
@@ -117,7 +117,7 @@ EOF
 
 EOF
 
-   cat $PKG_STATUS | awk -F, '$4 != "success"' | head -n 5 | table
+   cat $PKG_STATUS | awk -F, '$4 != "success"' | head -n 5 | table >> README.md
 fi
 
 echo "::endgroup::"
