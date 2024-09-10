@@ -4,10 +4,8 @@
 set -ex
 
 echo "::group::Install action dependencies"
-
 sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/sbuild
 echo "$DEB_REPOSITORY" | sudo tee /etc/apt/sources.list.d/1-custom-ros-deb-builder-repositories.list
-
 sudo apt update
 
 echo apt-cacher-ng apt-cacher-ng/tunnelenable boolean true | sudo debconf-set-selections
@@ -24,12 +22,6 @@ DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   catkin \
   python3-bloom \
   apt-cacher-ng
-
-if [ "$ACT" = "true" ]; then
-  # autostarting services does not work in `act` due to systemd missing in docker
-  service apt-cacher-ng start
-fi
-
 echo "::endgroup::"
 
 echo "::group::Setup build environment"
@@ -55,11 +47,9 @@ EOF
 echo "$SBUILD_CONF" >> ~/.sbuildrc
 
 cat ~/.sbuildrc
-
 echo "::endgroup::"
 
 echo "::group::Checkout workspace from $REPOS_FILE"
-
 mkdir src
-vcs import --recursive --input  "$REPOS_FILE" src
+vcs import --recursive --input "$REPOS_FILE" src
 echo "::endgroup::"
