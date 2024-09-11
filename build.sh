@@ -189,7 +189,7 @@ for PKG_PATH in setup_files ros_environment; do
      echo "Building essential package '$PKG_PATH' failed"
      exit 1
    fi
-   PKG_DEB=`ls $REPO/ros-one-$PKG_NAME*.deb $REPO_DEPENDENCIES/ros-one-$PKG_NAME*.deb 2>&- || true`
+   PKG_DEB=`ls $REPO/ros-one-${PKG_NAME}_*.deb $REPO_DEPENDENCIES/ros-one-${PKG_NAME}_*.deb 2>&- || true`
    test -f "${PKG_DEB}" || PKG_DEB="ros-one-${PKG_NAME}"
    sudo apt install -y ${PKG_DEB}
 
