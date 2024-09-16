@@ -9,7 +9,7 @@ cd /home/runner/apt_repo
 
 # report and delete all files > 100MB due to github's file size limit
 echo "Dropping build artifacts > 100MB"
-find . -type f -size +100M -exec du -h {} \; -exec rm {} \;
+find . -type f -size +99M -exec du -h {} \; -exec rm {} \;
 
 apt-ftparchive packages . > Packages
 apt-ftparchive release . > Release
