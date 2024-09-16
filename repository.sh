@@ -11,11 +11,17 @@ cd /home/runner/apt_repo
 echo "Dropping build artifacts > 100MB"
 find . -type f -size +99M -exec du -h {} \; -exec rm {} \;
 
+# keep top-level git clean to allow users to inspect it online
+mkdir repository
+mv *.deb *.ddeb *.files *.build *.buildinfo *.changes *.log "local.yaml" repository/ || true
+
+pushd repository
 apt-ftparchive packages . > Packages
 apt-ftparchive release . > Release
+popd
 
 REPOSITORY="$(printf "%s" "$GITHUB_REPOSITORY" | tr / _)"
-REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH"
+REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/repository/"
 
 cat <<EOF > _config.yml
 plugins:
@@ -39,8 +45,8 @@ sudo apt install ros-one-desktop-full ros-one-plotjuggler ros-one-navigation [..
 \`\`\`
 EOF
 
-ARCHITECTURES=$(grep Architecture: Packages | cut -d' ' -f2 | sort -u)
-PKG_CNT=$(grep ^Package: Packages | wc -l)
+ARCHITECTURES=$(grep Architecture: repository/Packages | cut -d' ' -f2 | sort -u)
+PKG_CNT=$(grep ^Package: repository/Packages | wc -l)
 
 cat <<EOF >> README.md
 
