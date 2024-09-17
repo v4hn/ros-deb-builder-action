@@ -15,10 +15,10 @@ find . -type f -size +99M -exec du -h {} \; -exec rm {} \;
 mkdir repository
 mv *.deb *.ddeb *.files *.build *.buildinfo *.changes *.log "local.yaml" repository/ || true
 
-pushd repository
+cd repository
 apt-ftparchive packages . > Packages
 apt-ftparchive release . > Release
-popd
+cd ..
 
 REPOSITORY="$(printf "%s" "$GITHUB_REPOSITORY" | tr / _)"
 REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/repository/"
