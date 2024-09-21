@@ -4,7 +4,11 @@
 set -ex
 
 echo "::group::Install action dependencies"
-sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/sbuild
+. /etc/os-release
+# jammy's sbuild is too old and vcs is missing
+test "$VERSION_CODENAME" = "jammy" && sudo apt install -y software-properties-common && sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/sbuild
+# Canonical dropped the Debian ROS packages from 24.04 for political reasons. Wow.
+test "$VERSION_CODENAME" = "noble" && sudo apt install -y software-properties-common && sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/ros
 echo "$DEB_REPOSITORY" | sudo tee /etc/apt/sources.list.d/1-custom-ros-deb-builder-repositories.list
 sudo apt update
 
