@@ -12,16 +12,8 @@ test "$VERSION_CODENAME" = "noble" && sudo apt install -y software-properties-co
 echo "$DEB_REPOSITORY" | sudo tee /etc/apt/sources.list.d/1-custom-ros-deb-builder-repositories.list
 sudo apt update
 
-# avoid apt-cacher 503 responses on load by increasing NOFILE
-sudo mkdir -p /etc/systemd/system/apt-cacher-ng.service.d
-cat | sudo tee /etc/systemd/system/apt-cacher-ng.service.d/filelimit.conf <<EOF
-[Service]
-LimitNOFILE=500000
-EOF
-# force apt to retry on 503 as spurious errors persist
+# force apt to retry on spurious download errors
 echo 'Acquire::Retries "20";' | sudo tee /etc/apt/apt.conf.d/80-retries
-
-echo apt-cacher-ng apt-cacher-ng/tunnelenable boolean true | sudo debconf-set-selections
 
 DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   mmdebstrap \
@@ -33,15 +25,16 @@ DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   python3-rosdep2 \
   sbuild \
   catkin \
-  python3-bloom \
-  apt-cacher-ng
+  python3-bloom
 echo "::endgroup::"
 
 echo "::group::Setup build environment"
 mkdir -p ~/.cache/sbuild
 mmdebstrap --variant=buildd --include=apt,ccache,ca-certificates \
   --customize-hook='chroot "$1" update-ccache-symlinks' \
-  "$DEB_DISTRO" "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar" "deb http://127.0.0.1:3142/azure.archive.ubuntu.com/ubuntu $DEB_DISTRO main universe"
+  --components=main,universe \
+  "$DEB_DISTRO" \
+  "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar"
 
 ccache --zero-stats --max-size=10.0G
 
