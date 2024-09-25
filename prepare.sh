@@ -4,6 +4,14 @@
 set -ex
 
 echo "::group::Install action dependencies"
+
+# force apt to retry on spurious download errors
+cat | sudo tee /etc/apt/apt.conf.d/80-retries <<EOF
+Acquire::Retries "20";
+Acquire::Retries::Delay::Maximum "300";
+Debug::Acquire::Retries "true";
+EOF
+
 . /etc/os-release
 # jammy's sbuild is too old and vcs is missing
 test "$VERSION_CODENAME" = "jammy" && sudo apt install -y software-properties-common && sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/sbuild
@@ -11,9 +19,6 @@ test "$VERSION_CODENAME" = "jammy" && sudo apt install -y software-properties-co
 test "$VERSION_CODENAME" = "noble" && sudo apt install -y software-properties-common && sudo add-apt-repository -y ppa:v-launchpad-jochen-sprickerhof-de/ros
 echo "$DEB_REPOSITORY" | sudo tee /etc/apt/sources.list.d/1-custom-ros-deb-builder-repositories.list
 sudo apt update
-
-# force apt to retry on spurious download errors
-echo 'Acquire::Retries "20";' | sudo tee /etc/apt/apt.conf.d/80-retries
 
 DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   mmdebstrap \
