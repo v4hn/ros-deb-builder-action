@@ -59,6 +59,13 @@ runs:
         ROSDEP_SOURCE: ${{ inputs.ROSDEP_SOURCE }}
         SBUILD_CONF: ${{ inputs.SBUILD_CONF }}
         CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
+    - name: Prepare rosdep keys
+      shell: bash
+      run: |
+        for f in $(echo "${{ inputs.ROSDEP_SOURCE }}" | tr '\n' ' ') local.yaml; do
+          [[ ! -f "$f" ]] || cat "$f"
+        done > local.yaml.tmp
+        mv local.yaml.tmp local.yaml
     - name: Deploy
       if: inputs.GITHUB_TOKEN && ( success() || inputs.PUSH_ON_ERROR == 'true' )
       uses: v4hn/ros-deb-builder-action/deploy@roso-noble
