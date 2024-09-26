@@ -118,6 +118,7 @@ EOF
       print "unknown status: " status
       exit 1
    }
+   estatus= "<a id=\"" epkg "\" href=\"#" epkg "\">" estatus "</a>"
    printf "| " estatus " | " ebloom " " ebuild " | " epkg " | " eversion " | " efiles " | " eurl " |\n"
 }'
 }
