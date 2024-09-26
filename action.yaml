@@ -50,7 +50,7 @@ runs:
     - name: Check out the repo
       uses: actions/checkout@v4
     - name: Build
-      uses: v4hn/ros-deb-builder-action/build@rosotest
+      uses: v4hn/ros-deb-builder-action/build@roso-noble
       with:
         ROS_DISTRO: ${{ inputs.ROS_DISTRO }}
         DEB_DISTRO: ${{ inputs.DEB_DISTRO }}
@@ -61,7 +61,7 @@ runs:
         CONTINUE_ON_ERROR: ${{ inputs.CONTINUE_ON_ERROR }}
     - name: Deploy
       if: inputs.GITHUB_TOKEN && ( success() || inputs.PUSH_ON_ERROR == 'true' )
-      uses: v4hn/ros-deb-builder-action/deploy@rosotest
+      uses: v4hn/ros-deb-builder-action/deploy@roso-noble
       with:
         BRANCH: ${{ inputs.BRANCH && inputs.BRANCH || format('{0}-{1}', inputs.DEB_DISTRO, inputs.ROS_DISTRO) }}
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
