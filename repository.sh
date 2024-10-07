@@ -21,7 +21,7 @@ apt-ftparchive release . > Release
 cd ..
 
 REPOSITORY="$(printf "%s" "$GITHUB_REPOSITORY" | tr / _)"
-REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/repository/"
+REPOSITORY_URL="https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$BRANCH/repository"
 
 cat <<EOF > _config.yml
 plugins:
