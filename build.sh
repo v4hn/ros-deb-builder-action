@@ -118,7 +118,15 @@ build_deb(){
   upstream="$(git remote get-url origin)"
   upstream_branch="$(git rev-parse --abbrev-ref HEAD)"
 
-  pkg_url="${upstream%.git}/tree/$upstream_branch"
+  # github and gitlab use the same 'tree' URL, but bitbucket differs
+  case $upstream in
+    *bitbucket.org*)
+      pkg_url="${upstream%.git}/src/$upstream_branch"
+      ;;
+    *)
+      pkg_url="${upstream%.git}/tree/$upstream_branch"
+      ;;
+  esac
 
   pkg_bloom_log=${pkg_name}_${pkg_version}-bloom_generate.log
 
