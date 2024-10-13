@@ -65,7 +65,6 @@ cat <<EOF >> README.md
 | Build Date | $(date) |
 EOF
 
-# echo "Package,Status,Bloom Log,Build Log,Deb File" > $PKG_STATUS
 PKG_STATUS=pkg_build_status.csv
 
 if [ -f $PKG_STATUS ]; then
@@ -123,7 +122,7 @@ EOF
 }'
 }
 
-   cat $PKG_STATUS | sort -t, -k1 | table >> README.md
+   cat $PKG_STATUS | tail -n+2 | sort -t, -k1 | table >> README.md
 
    cat <<EOF >> README.md
 
@@ -131,7 +130,7 @@ EOF
 
 EOF
 
-   cat $PKG_STATUS | awk -F, '$4 != "success"' | head -n 5 | table >> README.md
+   cat $PKG_STATUS | tail -n+2 | awk -F, '$4 != "success"' | head -n 10 | table >> README.md
 fi
 
 echo "::endgroup::"

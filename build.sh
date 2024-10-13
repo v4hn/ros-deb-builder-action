@@ -54,7 +54,9 @@ PKG_STATUS=$REPO/pkg_build_status.csv
 mkdir -p $REPO $REPO_DEPENDENCIES
 
 log_pkg_build() {
-   # echo "Package,Version,Status,Bloom Log,Build Log,Deb File,Installed Files" > $PKG_STATUS
+   if [ ! -e "$PKG_STATUS" ]; then
+     echo "Package,Version,URL,Status,Bloom Log,Build Log,Deb File,Installed Files" > $PKG_STATUS
+   fi
    echo "$pkg_name,$pkg_version,$pkg_url,$pkg_status,$pkg_bloom_log,$pkg_build_log,$pkg_deb,$pkg_list_files" >> $PKG_STATUS
    pkg_name=""
    pkg_version=""
