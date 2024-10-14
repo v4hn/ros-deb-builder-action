@@ -184,12 +184,12 @@ build_deb(){
   echo "::endgroup::"
 }
 
-echo "::group::prepare sources.repos"
-if [ ! -f $REPO/sources.repos ]; then
-  vcs export --exact-with-tags | tee $REPO/sources.repos
+echo "::group::prepare sources_exact.repos"
+if [ ! -f $REPO/sources_exact.repos ]; then
+  vcs export --exact-with-tags | tee $REPO/sources_exact.repos
 else
-  # skip "repositories: " line
-  vcs export --exact-with-tags | tail -n+2 | tee -a $REPO/sources.repos
+  # skip "repositories: " map key
+  vcs export --exact-with-tags | tail -n+2 | tee -a $REPO/sources_exact.repos
 fi
 echo "::endgroup::"
 
