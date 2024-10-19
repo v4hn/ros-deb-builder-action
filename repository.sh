@@ -34,7 +34,7 @@ cat <<EOF > README.md
 ## Github Preview Notice
 
 If you are viewing this page on github.com, please note that the README.md preview on the repository page is incomplete.
-Please view [the `README.md` file directly](https://github.com/$GITHUB_REPOSITORY/blob/$BRANCH/README.md) to see the full content.
+Please view [the \`README.md\` file directly](https://github.com/$GITHUB_REPOSITORY/blob/$BRANCH/README.md) to see the full content.
 
 ## Install Instructions
 
