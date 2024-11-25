@@ -24,6 +24,17 @@ runs:
       shell: sh
       env:
         BRANCH: ${{ inputs.BRANCH }}
+    - name: Mitigate github server-side hangup
+      run: |
+        rm /home/runner/apt_repo/repository/*-dbgsym_*.deb
+        # git config --global http.postBuffer 52428800
+        # git config --global pack.window 0
+        # git config --global http.minSessions 1
+        # git config --global http.maxRequests 1
+        # git config --global http.version HTTP/1.1
+        # git config --global pack.packSizeLimit 100m
+        # find /home/runner/apt_repo -type f -size +40M -exec du -h {} \; -exec rm {} \;
+      shell: sh
     - name: Deploy
       if: ${{ inputs.GITHUB_TOKEN }}
       uses: s0/git-publish-subdir-action@develop
@@ -33,3 +44,6 @@ runs:
         FOLDER: /home/runner/apt_repo
         GITHUB_TOKEN: ${{ inputs.GITHUB_TOKEN }}
         SQUASH_HISTORY: ${{ inputs.SQUASH_HISTORY }}
+        # GIT_TRACE_PACKET: 1
+        # GIT_TRACE: 1
+        # GIT_CURL_VERBOSE: 1
