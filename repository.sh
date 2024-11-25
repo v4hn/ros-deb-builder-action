@@ -3,13 +3,20 @@
 
 set -ex
 
-echo "::group::Setup deb repository"
-
 cd /home/runner/apt_repo
 
+echo "::group::List Debs"
+
 # report and delete all files > 100MB due to github's file size limit
-echo "Dropping build artifacts > 100MB"
+echo "Dropping build artifacts > 100MB\n--------------------------------"
 find . -type f -size +99M -exec du -h {} \; -exec rm {} \;
+
+echo "All Debs\n--------"
+sh -c "du -h *.deb"
+
+echo "::endgroup::"
+
+echo "::group::Setup deb repository"
 
 # keep top-level git clean to allow users to inspect it online
 mkdir repository
