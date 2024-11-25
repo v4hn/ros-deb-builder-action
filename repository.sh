@@ -20,7 +20,7 @@ echo "::group::Setup deb repository"
 
 # keep top-level git clean to allow users to inspect it online
 mkdir repository
-mv *.deb *.ddeb *.files *.build *.buildinfo *.changes *.log "local.yaml" repository/ || true
+sh -c "mv *.deb *.ddeb *.files *.build *.buildinfo *.changes *.log local.yaml repository/" || true
 
 cd repository
 apt-ftparchive packages . > Packages
