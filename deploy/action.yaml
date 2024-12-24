@@ -26,7 +26,7 @@ runs:
         BRANCH: ${{ inputs.BRANCH }}
     - name: Mitigate github server-side hangup
       run: |
-        rm /home/runner/apt_repo/repository/*-dbgsym_*.deb
+        rm -f /home/runner/apt_repo/repository/*-dbgsym_*.deb
         # git config --global http.postBuffer 52428800
         # git config --global pack.window 0
         # git config --global http.minSessions 1
