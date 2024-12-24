@@ -40,7 +40,7 @@ echo "::endgroup::"
 
 echo "::group::Setup build environment"
 mkdir -p ~/.cache/sbuild
-mmdebstrap --variant=buildd --include=apt,ccache,ca-certificates \
+mmdebstrap --variant=buildd --include=apt,ccache,ca-certificates,git \
   --setup-hook='cp /etc/apt/apt.conf.d/80-retries "$1"/etc/apt/apt.conf.d/80-retries' \
   --customize-hook='chroot "$1" update-ccache-symlinks' \
   --components=main,universe \
