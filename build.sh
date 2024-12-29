@@ -148,6 +148,8 @@ build_deb(){
   # all use the "debian" term, but we want this distribution to be called "one" instead
   sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
+  # skip dh_shlibdeps, because some pip modules, speech_recognition for example, contains x86/x86_64/win32/mac binaries
+  sed -i '/dh_shlibdeps / s@$@ || echo "Skip dh_shlibdeps error!!!"@' debian/rules
 
   sed -i "1 s@([^)]*)@($pkg_version)@" debian/changelog
 
