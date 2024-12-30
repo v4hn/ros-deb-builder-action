@@ -159,6 +159,10 @@ build_deb(){
   SBUILD_OPTS="--chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=$REPO --extra-package=$REPO \
     $EXTRA_SBUILD_OPTS"
+
+  # create logger directgory for venv
+  SBUILD_OPTS="$SBUILD_OPTS --chroot-setup-commands='mkdir -p /sbuild-nonexistent/.ros/log/; chmod a+rw -R /sbuild-nonexistent/'"
+
   # dpkg-source-opts: no need for upstream.tar.gz
   eval sbuild $SBUILD_OPTS
   sbuild_success=$?
