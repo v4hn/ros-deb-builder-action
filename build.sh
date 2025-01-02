@@ -47,6 +47,10 @@ esac
 
 EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T; s/.*/--extra-repository="\0"/; p' | tr '\n' ' ')"
 
+# jammy does not have python3-catkin-tools (noble has catkin-tools)
+curl -sSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xcad670483add74b8c77e4512c3263a3eba4c7747' -o /home/runner/ppa-k-okada-keyring.gpg
+EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='deb https://ppa.launchpadcontent.net/k-okada/python3-catkin-tools/ubuntu $DEB_DISTRO main' --extra-repository-key=/home/runner/ppa-k-okada-keyring.gpg"
+
 # make output directory
 REPO_DEPENDENCIES=/home/runner/apt_repo_dependencies
 REPO=/home/runner/apt_repo
