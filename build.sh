@@ -154,6 +154,8 @@ build_deb(){
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
   # skip dh_shlibdeps, because some pip modules, speech_recognition for example, contains x86/x86_64/win32/mac binaries
   sed -i '/dh_shlibdeps / s@$@ || echo "Skip dh_shlibdeps error!!!"@' debian/rules
+  # ignore dh_strip error, from jammy, 'objcopy' added '--compress-debug-sections' and this cause error on 'numpy/core/_multiarray_umath.cpython-310-x86_64-linux-gnu.so has a corrupt string table index - ignoring'
+  echo -e 'override_dh_strip:\n	dh_strip || true\n' |tee -a debian/rules
 
   sed -i "1 s@([^)]*)@($pkg_version)@" debian/changelog
 
