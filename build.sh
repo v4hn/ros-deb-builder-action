@@ -45,7 +45,7 @@ case $ROS_DISTRO in
     ;;
 esac
 
-EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T; s/.*/--extra-repository="\0"/; p' | tr '\n' ' ')"
+EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(/usr/bin/echo -e "$DEB_REPOSITORY" | sed -n '/^ *$/ T; s/^ *\(.*\)/--extra-repository="\1"/; p' | tr '\n' ' ')"
 
 # jammy does not have python3-catkin-tools (noble has catkin-tools)
 curl -sSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xcad670483add74b8c77e4512c3263a3eba4c7747' -o /home/runner/ppa-k-okada-keyring.gpg
