@@ -157,6 +157,10 @@ build_deb(){
   SBUILD_OPTS="--chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=$REPO --extra-package=$REPO \
     $EXTRA_SBUILD_OPTS"
+
+  # Canonical dropped the Debian ROS packages from 24.04 for political reasons. Wow.
+  test "$DEB_DISTRO" = "noble" && SBUILD_OPTS="$SBUILD_OPTS --extra-repository=\"deb [trusted=yes] https://ppa.launchpadcontent.net/v-launchpad-jochen-sprickerhof-de/ros/ubuntu $DEB_DISTRO main\""
+
   # dpkg-source-opts: no need for upstream.tar.gz
   eval sbuild $SBUILD_OPTS
   sbuild_success=$?
