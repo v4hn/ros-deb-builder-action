@@ -45,7 +45,11 @@ case $ROS_DISTRO in
     ;;
 esac
 
-EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T; s/.*/--extra-repository="\0"/; p' | tr '\n' ' ')"
+EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(/usr/bin/echo -e "$DEB_REPOSITORY" | sed -n '/^ *$/ T; s/^ *\(.*\)/--extra-repository="\1"/; p' | tr '\n' ' ')"
+
+# jammy does not have python3-catkin-tools (noble has catkin-tools)
+curl -sSL 'https://keyserver.ubuntu.com/pks/lookup?op=get&search=0xcad670483add74b8c77e4512c3263a3eba4c7747' -o /home/runner/ppa-k-okada-keyring.gpg
+EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository='deb https://ppa.launchpadcontent.net/k-okada/python3-catkin-tools/ubuntu $DEB_DISTRO main' --extra-repository-key=/home/runner/ppa-k-okada-keyring.gpg"
 
 # make output directory
 REPO_DEPENDENCIES=/home/runner/apt_repo_dependencies
@@ -148,6 +152,10 @@ build_deb(){
   # all use the "debian" term, but we want this distribution to be called "one" instead
   sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
+  # skip dh_shlibdeps, because some pip modules, speech_recognition for example, contains x86/x86_64/win32/mac binaries
+  sed -i '/dh_shlibdeps / s@$@ || echo "Skip dh_shlibdeps error!!!"@' debian/rules
+  # ignore dh_strip error, from jammy, 'objcopy' added '--compress-debug-sections' and this cause error on 'numpy/core/_multiarray_umath.cpython-310-x86_64-linux-gnu.so has a corrupt string table index - ignoring'
+  echo -e 'override_dh_strip:\n	dh_strip || true\n' |tee -a debian/rules
 
   sed -i "1 s@([^)]*)@($pkg_version)@" debian/changelog
 
@@ -157,6 +165,10 @@ build_deb(){
   SBUILD_OPTS="--chroot-mode=unshare --no-clean-source --no-run-lintian \
     --dpkg-source-opts=\"-Zgzip -z1 --format=1.0 -sn\" --build-dir=$REPO --extra-package=$REPO \
     $EXTRA_SBUILD_OPTS"
+
+  # create logger directgory for venv
+  SBUILD_OPTS="$SBUILD_OPTS --chroot-setup-commands='mkdir -p /sbuild-nonexistent/.ros/log/; chmod a+rw -R /sbuild-nonexistent/'"
+
   # dpkg-source-opts: no need for upstream.tar.gz
   eval sbuild $SBUILD_OPTS
   sbuild_success=$?
