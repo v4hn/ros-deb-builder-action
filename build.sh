@@ -23,6 +23,10 @@ case $ROS_DISTRO in
     BLOOM=ros
     ROS_DEB="$ROS_DISTRO-"
     ROS_DISTRO=debian
+    # Canonical dropped the Debian ROS packages from 24.04 for political reasons. Wow.
+    if "$DEB_DISTRO" = "noble"; then
+      EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --extra-repository=\"deb [trusted=yes] https://ppa.launchpadcontent.net/v-launchpad-jochen-sprickerhof-de/ros/ubuntu $DEB_DISTRO main\""
+    fi
     ;;
   debian)
     ;;
