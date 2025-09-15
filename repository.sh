@@ -12,7 +12,7 @@ echo "Dropping build artifacts > 100MB\n--------------------------------"
 find . -type f -size +99M -exec du -h {} \; -exec rm {} \;
 
 echo "All Debs\n--------"
-sh -c "du -h *.deb"
+sh -c "du -h *.deb" || true
 
 echo "::endgroup::"
 
