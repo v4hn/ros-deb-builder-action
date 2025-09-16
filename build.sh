@@ -149,6 +149,10 @@ build_deb(){
   sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
 
+  # debhelper cmake turned this ON for reproducible builds, but the world thinks
+  # CPMAddPackage with github hashes is the way towards a brighter future
+  sed -i "/dh_auto_configure --/ a \	\	-DFETCHCONTENT_FULLY_DISCONNECTED=OFF \\\\" debian/rules
+
   sed -i "1 s@([^)]*)@($pkg_version)@" debian/changelog
 
   # https://github.com/ros-infrastructure/bloom/pull/643
