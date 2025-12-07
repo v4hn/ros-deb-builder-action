@@ -199,7 +199,7 @@ echo "::endgroup::"
 
 echo "::group::Prepare ROS environment variables"
 # handle essential packages first
-for PKG_PATH in setup_files ros_environment; do
+for PKG_PATH in catkin setup_files ros_environment; do
    PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
 
    if test -d "$PKG_PATH" && ! build_deb "$PKG_PATH"; then
@@ -207,8 +207,14 @@ for PKG_PATH in setup_files ros_environment; do
      exit 1
    fi
    PKG_DEB=`ls $REPO/ros-one-${PKG_NAME}_*.deb $REPO_DEPENDENCIES/ros-one-${PKG_NAME}_*.deb 2>&- || true`
-   test -f "${PKG_DEB}" || PKG_DEB="ros-one-${PKG_NAME}"
-   sudo apt install -y ${PKG_DEB}
+   if test -f "${PKG_DEB}"; then
+     sudo apt install -y ${PKG_DEB}
+   elif apt-cache show ros-one-$PKG_NAME 2>&- | grep -q '^Package:'; then
+     sudo apt install -y ros-one-$PKG_NAME
+   else
+     echo "Did not find package '$PKG_PATH'" >&2
+     continue
+   fi
 
    EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
 done
@@ -219,7 +225,7 @@ echo "::endgroup::"
 
 FAIL_EVENTUALLY=0
 # TODO: use colcon list -tp in future
-for PKG_PATH in $(catkin_topological_order --only-folders | grep -v 'setup_files\|ros_environment'); do
+for PKG_PATH in $(catkin_topological_order --only-folders | grep -v '^\(catkin\|setup_files\|ros_environment\)$'); do
   if ! build_deb "$PKG_PATH"; then
     if [ "$CONTINUE_ON_ERROR" = false ]; then
       exit 1
