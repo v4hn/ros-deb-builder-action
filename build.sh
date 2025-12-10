@@ -146,7 +146,7 @@ build_deb(){
   fi
   # because bloom needs to see the ROS distro as "debian" to resolve rosdep keys the generated files
   # all use the "debian" term, but we want this distribution to be called "one" instead
-  sed -i 's@ros-debian-@ros-one-@' $(grep -rl 'ros-debian-' debian/)
+  sed -i 's@ros-debian-@ros-one-@g' $(grep -rl 'ros-debian-' debian/)
   sed -i 's@/opt/ros/debian@/opt/ros/one@g' debian/rules
 
   # debhelper cmake turned this ON for reproducible builds, but the world thinks
