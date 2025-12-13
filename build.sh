@@ -198,8 +198,14 @@ fi
 echo "::endgroup::"
 
 echo "::group::Prepare ROS environment variables"
+
+OPT_PATH_PKG="" # catkin or setup_files provides /opt/ros/one/setup.sh
 # handle essential packages first
 for PKG_PATH in catkin setup_files ros_environment; do
+   if [ "$PKG_PATH" = "ros_environment" ]; then
+     EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$OPT_PATH_PKG"
+   fi
+
    PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
 
    if test -d "$PKG_PATH" && ! build_deb "$PKG_PATH"; then
@@ -216,8 +222,11 @@ for PKG_PATH in catkin setup_files ros_environment; do
      continue
    fi
 
-   EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-$PKG_NAME"
+   if [ -z "$OPT_PATH_PKG" ]; then
+     OPT_PATH_PKG="$PKG_NAME"
+   fi
 done
+EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS --add-depends=ros-one-ros-environment"
 
 # required for correct catkin_topological_order below
 . /opt/ros/one/setup.sh
