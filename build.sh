@@ -102,7 +102,6 @@ echo "::endgroup::"
 build_deb(){
   PKG_PATH="$1"
 
-  echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
   COUNT=$((COUNT+1))
 
   test -f "$PKG_PATH/CATKIN_IGNORE" && echo "Skipped" && return
@@ -185,7 +184,6 @@ build_deb(){
   cd -
 
   ccache -sv
-  echo "::endgroup::"
 }
 
 echo "::group::prepare sources_exact.repos"
@@ -208,9 +206,15 @@ for PKG_PATH in catkin setup_files ros_environment; do
 
    PKG_NAME=`echo $PKG_PATH | sed 's/_/-/g'`
 
-   if test -d "$PKG_PATH" && ! build_deb "$PKG_PATH"; then
-     echo "Building essential package '$PKG_PATH' failed"
-     exit 1
+   if test -d "$PKG_PATH"; then
+     echo "::group::Building essential package '$PKG_PATH'"
+     if ! build_deb "$PKG_PATH"; then
+       echo "::endgroup::"
+       echo "Build failed"
+       exit 1
+     else
+       echo "::endgroup::"
+     fi
    fi
    PKG_DEB=`ls $REPO/ros-one-${PKG_NAME}_*.deb $REPO_DEPENDENCIES/ros-one-${PKG_NAME}_*.deb 2>&- || true`
    if test -f "${PKG_DEB}"; then
@@ -235,12 +239,17 @@ echo "::endgroup::"
 FAIL_EVENTUALLY=0
 # TODO: use colcon list -tp in future
 for PKG_PATH in $(catkin_topological_order --only-folders | grep -v '^\(catkin\|setup_files\|ros_environment\)$'); do
+  echo "::group::Building $COUNT/$TOTAL: $PKG_PATH"
   if ! build_deb "$PKG_PATH"; then
+    echo "::endgroup::"
+    echo "Build failed"
     if [ "$CONTINUE_ON_ERROR" = false ]; then
       exit 1
     else
       FAIL_EVENTUALLY=1
     fi
+  else
+    echo "::endgroup::"
   fi
 done
 
