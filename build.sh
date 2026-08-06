@@ -45,7 +45,7 @@ case $ROS_DISTRO in
     ;;
 esac
 
-EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(echo $DEB_REPOSITORY | sed -n '/^ *$/ T; s/.*/--extra-repository="\0"/; p' | tr '\n' ' ')"
+EXTRA_SBUILD_OPTS="$EXTRA_SBUILD_OPTS $(/usr/bin/echo -e "$DEB_REPOSITORY" | sed -n '/^ *$/ T; s/^ *\(.*\)/--extra-repository="\1"/; p' | tr '\n' ' ')"
 
 # make output directory
 REPO_DEPENDENCIES=/home/runner/apt_repo_dependencies
