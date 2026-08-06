@@ -36,7 +36,21 @@ runs:
         # find /home/runner/apt_repo -type f -size +40M -exec du -h {} \; -exec rm {} \;
       shell: sh
     - name: Deploy
-      if: ${{ inputs.GITHUB_TOKEN }}
+      # if we overwrite the branch in this repository, forego s0/git-publish-subdir-action which fetches the whole repository
+      if: ${{ inputs.GITHUB_TOKEN && inputs.SQUASH_HISTORY }}
+      run: |
+        git config --global user.name "${env.GITHUB_ACTOR}"
+        git config --global user.email "${env.GITHUB_ACTOR}@users.noreply.github.com"
+        cd /home/runner/apt_repo
+        git init .
+        git switch -c ${{ inputs.BRANCH }}
+        git add .
+        git commit -m "Deploy build artifacts to ${{ inputs.BRANCH }}"
+        git remote add origin "https://x-access-token:${env.GITHUB_TOKEN}@github.com/${env.GITHUB_REPOSITORY}.git"
+        git push --force origin ${{ inputs.BRANCH }}
+      shell: sh
+    - name: Deploy
+      if: ${{ inputs.GITHUB_TOKEN && ( ! inputs.SQUASH_HISTORY ) }}
       uses: s0/git-publish-subdir-action@develop
       env:
         REPO: self
