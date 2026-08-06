@@ -45,7 +45,7 @@ mmdebstrap --variant=buildd --include=apt,ccache,ca-certificates,git \
   --customize-hook='chroot "$1" update-ccache-symlinks' \
   --components=main,universe \
   "$DEB_DISTRO" \
-  "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar"
+  "$HOME/.cache/sbuild/$DEB_DISTRO-$(dpkg --print-architecture).tar"
 
 ccache --zero-stats --max-size=10.0G
 
