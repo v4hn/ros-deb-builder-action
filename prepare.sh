@@ -12,6 +12,7 @@ Acquire::Retries::Delay::Maximum "300";
 Debug::Acquire::Retries "true";
 EOF
 
+echo apt-cacher-ng apt-cacher-ng/tunnelenable boolean true | sudo debconf-set-selections
 
 DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   mmdebstrap \
@@ -19,7 +20,11 @@ DEBIAN_FRONTEND=noninteractive sudo apt install -y \
   debian-archive-keyring \
   ccache \
   curl \
+  apt-cacher-ng \
   retry
+
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1053833#10
+sed -i 's/^# VfileUseRangeOps: 1$/VfileUseRangeOps: 0/' /etc/apt-cacher-ng/acng.conf
 
 . /etc/os-release
 # jammy's sbuild is too old and vcs is missing
@@ -45,7 +50,8 @@ mmdebstrap --variant=buildd --include=apt,ccache,ca-certificates,git \
   --customize-hook='chroot "$1" update-ccache-symlinks' \
   --components=main,universe \
   "$DEB_DISTRO" \
-  "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar"
+  "$HOME/.cache/sbuild/$DEB_DISTRO-amd64.tar" \
+  "deb http://127.0.0.1:3142/azure.archive.ubuntu.com/ubuntu $DEB_DISTRO main universe"
 
 ccache --zero-stats --max-size=10.0G
 
